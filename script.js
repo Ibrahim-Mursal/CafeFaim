@@ -114,7 +114,7 @@
     if (prefersReduce) {
       typeTarget.textContent = typeWords[0].textContent;
     } else {
-      var TYPE_MS = 70, DELETE_MS = 40, HOLD_MS = 1500, GAP_MS = 300;
+      var TYPE_MS = 80, DELETE_MS = 50, HOLD_MS = 1500, GAP_MS = 300;
       var typeIdx = 0;
 
       var typeChar = function (word, pos, cb) {
