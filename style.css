@@ -41,6 +41,10 @@ body{
 .center{text-align:center}
 .t-pink{color:var(--pink)}
 .t-green{color:var(--sage)}
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
 
 h1,h2,h3,h4{font-family:var(--f-display);font-weight:600;line-height:1.05;letter-spacing:-.01em}
 h2{font-size:clamp(2rem,5vw,3.2rem);color:var(--green-dark)}
@@ -144,6 +148,23 @@ a:hover{text-decoration:underline}
 @keyframes hero-line-in{from{opacity:0;transform:scale(.96)}}
 .hero__title.rv.in .t-green{animation:hero-line-in 600ms cubic-bezier(.16,1,.3,1) 150ms both}
 .hero__title.rv.in .t-pink{animation:hero-line-in 600ms cubic-bezier(.16,1,.3,1) 500ms both}
+
+/* Typewriter word above "We cake you happy!" — script.js types and
+   deletes .hero__type-text's content one character at a time, reading
+   words from the hidden .hero__type-words list (which the existing
+   language-swap code above keeps translated). The caret blinks
+   independently so it isn't wiped by the text-content churn. */
+.hero__type-cursor{
+  display:inline-block;
+  width:3px;
+  height:.82em;
+  margin-left:.06em;
+  background:currentColor;
+  vertical-align:-0.08em;
+  animation:hero-caret-blink 900ms step-end infinite;
+}
+@keyframes hero-caret-blink{50%{opacity:0}}
+
 .hero__sub{
   max-width:560px;margin:0 auto 34px;font-size:clamp(1.02rem,2vw,1.2rem);
   color:var(--green-dark);

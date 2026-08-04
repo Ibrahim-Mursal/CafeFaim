@@ -19,7 +19,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Fredoka:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
 <!-- bump ?v= on every deploy so phones stop serving stale CSS -->
-<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="style.css?v=11">
 <script>document.documentElement.className+=' js';</script>
 
 <script type="application/ld+json">
@@ -87,7 +87,14 @@
     <p class="eyebrow" data-nl="Café · Lunch · Patisserie" data-en="Café · Lunch · Patisserie">Café · Lunch · Patisserie</p>
 
     <h1 class="hero__title">
-      <span class="t-green" data-nl="Zoet," data-en="Sweet,">Zoet,</span><br>
+      <span class="hero__type t-green" aria-hidden="true"><span class="hero__type-text"></span><span class="hero__type-cursor"></span></span>
+      <span class="hero__type-words" hidden>
+        <span data-nl="Zoet" data-en="Sweet">Zoet</span>
+        <span data-nl="Vers" data-en="Fresh">Vers</span>
+        <span data-nl="Gezellig" data-en="Cozy">Gezellig</span>
+        <span data-nl="Halal" data-en="Halal">Halal</span>
+      </span>
+      <span class="sr-only" data-nl="Zoet, gezellig, halal, vers," data-en="Sweet, cozy, halal, fresh,">Zoet, gezellig, halal, vers,</span><br>
       <span class="t-pink">We cake you happy!</span>
     </h1>
 
@@ -529,6 +536,6 @@
   <p class="foot__copy">© <span id="yr">2026</span> Café Faim · Café – Lunch – Patisserie</p>
 </footer>
 
-<script src="script.js?v=9"></script>
+<script src="script.js?v=11"></script>
 </body>
 </html>

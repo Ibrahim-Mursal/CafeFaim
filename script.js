@@ -106,6 +106,50 @@
     });
   }
 
+  /* ---------- hero typewriter headline ---------- */
+  var typeTarget = document.querySelector('.hero__type-text');
+  var typeWords  = document.querySelectorAll('.hero__type-words [data-nl][data-en]');
+
+  if (typeTarget && typeWords.length) {
+    if (prefersReduce) {
+      typeTarget.textContent = typeWords[0].textContent;
+    } else {
+      var TYPE_MS = 70, DELETE_MS = 40, HOLD_MS = 1500, GAP_MS = 300;
+      var typeIdx = 0;
+
+      var typeChar = function (word, pos, cb) {
+        typeTarget.textContent = word.slice(0, pos);
+        if (pos < word.length) {
+          setTimeout(function () { typeChar(word, pos + 1, cb); }, TYPE_MS);
+        } else {
+          setTimeout(cb, HOLD_MS);
+        }
+      };
+
+      var deleteChar = function (word, pos, cb) {
+        typeTarget.textContent = word.slice(0, pos);
+        if (pos > 0) {
+          setTimeout(function () { deleteChar(word, pos - 1, cb); }, DELETE_MS);
+        } else {
+          setTimeout(cb, GAP_MS);
+        }
+      };
+
+      var typeCycle = function () {
+        // Read the word fresh each cycle so a mid-loop language switch
+        // (script.js's swapText already retargeted the hidden source
+        // node's textContent) is picked up on the very next word.
+        var word = typeWords[typeIdx].textContent;
+        typeIdx = (typeIdx + 1) % typeWords.length;
+        typeChar(word, 0, function () {
+          deleteChar(word, word.length, typeCycle);
+        });
+      };
+
+      typeCycle();
+    }
+  }
+
   /* ---------- footer year ---------- */
   var yr = document.getElementById('yr');
   if (yr) yr.textContent = new Date().getFullYear();
