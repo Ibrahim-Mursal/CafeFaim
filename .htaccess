@@ -1,0 +1,45 @@
+# =========================================================
+# Café Faim — server hardening (Apache / mod_apache hosts only)
+#
+# The site's HTML sets what it can via <meta> (CSP, referrer policy —
+# see index.html <head>), but several headers only take effect when
+# sent by the server, not via meta: X-Frame-Options,
+# X-Content-Type-Options, Permissions-Policy, Strict-Transport-Security,
+# and CSP's frame-ancestors directive. This file supplies those on
+# Apache. If this ends up on Netlify, Vercel, or another platform
+# instead, port the header block below to that platform's own config
+# (_headers / vercel.json / etc.) — .htaccess is ignored everywhere else.
+# =========================================================
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()"
+  # Only takes effect once the site is actually served over HTTPS —
+  # browsers ignore HSTS on a plain-HTTP response.
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+# Redirect http:// and non-canonical www to https://. Uncomment once the
+# production domain is live behind HTTPS — left off by default so local
+# Apache testing over plain HTTP still works.
+# <IfModule mod_rewrite.c>
+#   RewriteEngine On
+#   RewriteCond %{HTTPS} off
+#   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>
+
+# Don't let visitors browse the asset folders as directory listings.
+Options -Indexes
+
+# Static assets are content-hashed via the ?v= query string in
+# index.html (bump it on every deploy), so they're safe to cache hard.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>

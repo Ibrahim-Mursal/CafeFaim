@@ -1,0 +1,37 @@
+{
+  "eyebrow": {
+    "nl": "Café · Lunch · Patisserie",
+    "en": "Café · Lunch · Patisserie"
+  },
+  "type_words": [
+    {
+      "nl": "Zoet",
+      "en": "Sweet"
+    },
+    {
+      "nl": "Vers",
+      "en": "Fresh"
+    },
+    {
+      "nl": "Gezellig",
+      "en": "Cozy"
+    },
+    {
+      "nl": "Halal",
+      "en": "Halal"
+    }
+  ],
+  "headline": "We cake you happy!",
+  "sub": {
+    "nl": "Coffee, matcha, lunch en patisserie in hartje Waalwijk. Elke dag vers gemaakt — en 100% halal.",
+    "en": "Coffee, matcha, lunch and patisserie in the heart of Waalwijk. Freshly made every day — and 100% halal."
+  },
+  "cta_menu": {
+    "nl": "Bekijk het menu",
+    "en": "See the menu"
+  },
+  "cta_custom": {
+    "nl": "Taart op maat →",
+    "en": "Custom cake →"
+  }
+}

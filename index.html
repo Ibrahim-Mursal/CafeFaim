@@ -3,6 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Locks script/style/frame/etc. sources down to what the page actually
+     uses. The two inline script elements below (the early "js" class flip
+     and the JSON-LD block) are allow-listed by exact sha256 hash rather
+     than 'unsafe-inline', so injected inline scripts still get blocked.
+     build.js recomputes both hashes on every build — see its scriptHashes()
+     — so don't hand-edit them here.
+     frame-ancestors/sandbox/report-* are silently ignored by the HTML meta
+     delivery method (CSP spec) — those need a real HTTP header from
+     whatever host this ends up on. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-5JWz2pFlxEjBn60lOlhminb3At6YloWzeus5DqPU7W8=' 'sha256-6ujkW6WZbsDNk7REVo161dSm4o5LSEphD2asVpjCEbg='; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; frame-src https://maps.google.com https://www.google.com; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
 <title>Café Faim — Café · Lunch · Patisserie in Waalwijk</title>
 
 <meta name="description" content="Café Faim in Waalwijk — coffee, matcha, lunch en patisserie. Elke dag vers gemaakt, 100% halal. Ook custom taarten op maat via WhatsApp.">
@@ -28,7 +41,11 @@
   "@type": "CafeOrCoffeeShop",
   "name": "Café Faim",
   "slogan": "We cake you happy!",
-  "servesCuisine": ["Café", "Lunch", "Patisserie"],
+  "servesCuisine": [
+    "Café",
+    "Lunch",
+    "Patisserie"
+  ],
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "Stationsstraat 107",
@@ -36,11 +53,37 @@
     "addressLocality": "Waalwijk",
     "addressCountry": "NL"
   },
-  "sameAs": ["https://www.instagram.com/cafefaim/"],
+  "sameAs": [
+    "https://www.instagram.com/cafefaim/"
+  ],
   "openingHoursSpecification": [
-    {"@type":"OpeningHoursSpecification","dayOfWeek":["Tuesday","Wednesday"],"opens":"11:00","closes":"22:00"},
-    {"@type":"OpeningHoursSpecification","dayOfWeek":["Thursday","Friday","Saturday"],"opens":"11:00","closes":"23:00"},
-    {"@type":"OpeningHoursSpecification","dayOfWeek":["Sunday"],"opens":"11:00","closes":"22:00"}
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Tuesday",
+        "Wednesday"
+      ],
+      "opens": "11:00",
+      "closes": "22:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Thursday",
+        "Friday",
+        "Saturday"
+      ],
+      "opens": "11:00",
+      "closes": "23:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Sunday"
+      ],
+      "opens": "11:00",
+      "closes": "22:00"
+    }
   ]
 }
 </script>
@@ -63,13 +106,13 @@
       <a href="#taarten" data-nl="Taarten"  data-en="Cakes">Taarten</a>
       <a href="#beeld"   data-nl="In beeld" data-en="Gallery">In beeld</a>
       <a href="#bezoek"  data-nl="Bezoek"   data-en="Visit">Bezoek</a>
-      <a class="btn btn--pink btn--sm nav__cta--mobile" href="https://wa.me/message/TPX75PMNP3RSJ1" target="_blank" rel="noopener"
+      <a class="btn btn--pink btn--sm nav__cta--mobile" href="https://wa.me/message/TPX75PMNP3RSJ1" target="_blank" rel="noopener noreferrer"
          data-nl="Bestel een taart" data-en="Order a cake">Bestel een taart</a>
     </nav>
 
     <div class="nav__actions">
       <button class="langbtn" id="langbtn" type="button" aria-label="Switch language">EN</button>
-      <a class="btn btn--pink btn--sm" href="https://wa.me/message/TPX75PMNP3RSJ1" target="_blank" rel="noopener"
+      <a class="btn btn--pink btn--sm" href="https://wa.me/message/TPX75PMNP3RSJ1" target="_blank" rel="noopener noreferrer"
          data-nl="Bestel een taart" data-en="Order a cake">Bestel een taart</a>
     </div>
 
@@ -83,7 +126,13 @@
 
 <!-- ============ HERO ============ -->
 <section class="hero" id="top">
+  <video class="hero__bg" autoplay muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1" disablePictureInPicture disableRemotePlayback>
+    <source src="assets/video/hero.mp4" type="video/mp4">
+  </video>
+  <div class="hero__scrim" aria-hidden="true"></div>
+
   <div class="wrap hero__inner">
+<!-- cms:hero -->
     <p class="eyebrow" data-nl="Café · Lunch · Patisserie" data-en="Café · Lunch · Patisserie">Café · Lunch · Patisserie</p>
 
     <h1 class="hero__title">
@@ -94,7 +143,7 @@
         <span data-nl="Gezellig" data-en="Cozy">Gezellig</span>
         <span data-nl="Halal" data-en="Halal">Halal</span>
       </span>
-      <span class="sr-only" data-nl="Zoet, gezellig, halal, vers," data-en="Sweet, cozy, halal, fresh,">Zoet, gezellig, halal, vers,</span><br>
+      <span class="sr-only" data-nl="Zoet, vers, gezellig, halal," data-en="Sweet, fresh, cozy, halal,">Zoet, vers, gezellig, halal,</span><br>
       <span class="t-pink">We cake you happy!</span>
     </h1>
 
@@ -106,9 +155,10 @@
 
     <div class="hero__cta">
       <a class="btn btn--pink" href="#menu" data-nl="Bekijk het menu" data-en="See the menu">Bekijk het menu</a>
-      <a class="btn btn--ghost" href="https://wa.me/message/TPX75PMNP3RSJ1" target="_blank" rel="noopener"
+      <a class="btn btn--ghost" href="https://wa.me/message/TPX75PMNP3RSJ1" target="_blank" rel="noopener noreferrer"
          data-nl="Taart op maat →" data-en="Custom cake →">Taart op maat →</a>
     </div>
+<!-- /cms:hero -->
 
     <!-- pink line-art cup, echoing their opening poster -->
     <svg class="hero__cup" viewBox="0 0 260 200" fill="none" aria-hidden="true">
@@ -162,6 +212,7 @@
     <p class="kicker center" data-nl="Menukaart" data-en="Menu">Menukaart</p>
     <h2 class="center display" data-nl="Wat we serveren" data-en="What we serve">Wat we serveren</h2>
 
+    <!-- cms:menu -->
     <article class="mcard">
       <h3 class="mcard__t">Lunch</h3>
       <div class="mcard__cols">
@@ -199,9 +250,9 @@
             <h4 class="mgrp__h" data-nl="Pannenkoeken" data-en="Pancakes">Pannenkoeken</h4>
             <ul class="mlist">
               <li><p class="mrow"><span class="mn" data-nl="Choco Banaan Amandel" data-en="Choco Ban Almo">Choco Banaan Amandel</span><span class="mp">&euro;9.95</span></p>
-                  <p class="md" data-nl="Amandelmascarpone, amandelpralin&eacute;, banaan, amandelen, chocoladestukjes en ahornsiroop" data-en="Almond mascarpone, Almond praline, Bananas, Almonds, Chocolate chips and Maple syrup">Amandelmascarpone, amandelpralin&eacute;, banaan, amandelen, chocoladestukjes en ahornsiroop</p></li>
+                  <p class="md" data-nl="Amandelmascarpone, amandelpraliné, banaan, amandelen, chocoladestukjes en ahornsiroop" data-en="Almond mascarpone, Almond praline, Bananas, Almonds, Chocolate chips and Maple syrup">Amandelmascarpone, amandelpraliné, banaan, amandelen, chocoladestukjes en ahornsiroop</p></li>
               <li><p class="mrow"><span class="mn" data-nl="Pistache Rode Vruchten" data-en="Pistachio Berries">Pistache Rode Vruchten</span><span class="mp">&euro;10.95</span></p>
-                  <p class="md" data-nl="Pistachemascarpone, pistachepralin&eacute;, rode vruchten, pistachenoten, rozenblaadjes en ahornsiroop" data-en="Pistachio mascarpone, Pistachio praline, Red fruits, Pistachios, Rose petals and Maple syrup">Pistachemascarpone, pistachepralin&eacute;, rode vruchten, pistachenoten, rozenblaadjes en ahornsiroop</p></li>
+                  <p class="md" data-nl="Pistachemascarpone, pistachepraliné, rode vruchten, pistachenoten, rozenblaadjes en ahornsiroop" data-en="Pistachio mascarpone, Pistachio praline, Red fruits, Pistachios, Rose petals and Maple syrup">Pistachemascarpone, pistachepraliné, rode vruchten, pistachenoten, rozenblaadjes en ahornsiroop</p></li>
               <li><p class="mrow"><span class="mn">Loaded Biscoff</span><span class="mp">&euro;9.95</span></p>
                   <p class="md" data-nl="Biscoff mascarpone, Lotus crumble, Biscoff en witte chocoladepasta" data-en="Biscoff mascarpone, Lotus crumbles, Biscoff and White chocolate spread">Biscoff mascarpone, Lotus crumble, Biscoff en witte chocoladepasta</p></li>
             </ul>
@@ -222,7 +273,7 @@
               <li data-nl="Signature gebak" data-en="Signature pastries">Signature gebak</li>
               <li data-nl="Bananenbrood" data-en="Banana bread">Bananenbrood</li>
             </ul>
-            <p class="mbox__note" data-nl="Aanbod kan dagelijks vari&euml;ren." data-en="Selection may vary daily.">Aanbod kan dagelijks vari&euml;ren.</p>
+            <p class="mbox__note" data-nl="Aanbod kan dagelijks variëren." data-en="Selection may vary daily.">Aanbod kan dagelijks variëren.</p>
           </section>
 
           <p class="mtill" data-nl="Lunch tot 15:00" data-en="Lunch till 15:00">Lunch tot 15:00</p>
@@ -254,7 +305,7 @@
               <li><p class="mrow"><span class="mn" data-nl="Karamel" data-en="Caramel">Karamel</span><span class="mp">&euro;5.70</span></p></li>
               <li><p class="mrow"><span class="mn" data-nl="Vanille" data-en="Vanilla">Vanille</span><span class="mp">&euro;5.70</span></p></li>
               <li><p class="mrow"><span class="mn" data-nl="Chocolade" data-en="Chocolate">Chocolade</span><span class="mp">&euro;5.70</span></p></li>
-              <li><p class="mrow"><span class="mn">Cr&egrave;me Br&ucirc;l&eacute;e</span><span class="mp">&euro;6.50</span></p></li>
+              <li><p class="mrow"><span class="mn">Crème Brûlée</span><span class="mp">&euro;6.50</span></p></li>
               <li><p class="mrow"><span class="mn">Tiramisu</span><span class="mp">&euro;6.50</span></p></li>
             </ul>
           </section>
@@ -276,20 +327,20 @@
             <section class="mgrp">
               <h4 class="mgrp__h">Matcha</h4>
               <ul class="mlist">
-                <li><p class="mrow"><span class="mn">Iced Latte</span><span class="mp"><em class="mfrom" data-nl="Vanaf" data-en="From">Vanaf</em>&nbsp;&euro;7.00</span></p>
-                    <p class="md" data-nl="Kies smaak, melk en siroop naar wens &mdash; vraag de barista naar de opties." data-en="Choose your flavor, milk and syrup &mdash; ask the barista for the options.">Kies smaak, melk en siroop naar wens &mdash; vraag de barista naar de opties.</p></li>
+              <li><p class="mrow"><span class="mn">Iced Latte</span><span class="mp"><em class="mfrom" data-nl="Vanaf" data-en="From">Vanaf</em>&nbsp;&euro;7.00</span></p>
+                  <p class="md" data-nl="Kies smaak, melk en siroop naar wens — vraag de barista naar de opties." data-en="Choose your flavor, milk and syrup — ask the barista for the options.">Kies smaak, melk en siroop naar wens — vraag de barista naar de opties.</p></li>
               </ul>
             </section>
 
             <section class="mgrp">
               <h4 class="mgrp__h mgrp__h--sub" data-nl="Specials" data-en="Specialty">Specials</h4>
               <ul class="mlist">
-                <li><p class="mrow"><span class="mn">Strawberry Shortcake</span><span class="mp">&euro;8.00</span></p>
-                    <p class="md" data-nl="Aardbei, koekjessiroop, melk naar keuze, aardbeien cold foam, koekjeskruimels" data-en="Strawberry, Cookie syrup, Milk of choice, Strawberry cold foam, Cookie crumbs">Aardbei, koekjessiroop, melk naar keuze, aardbeien cold foam, koekjeskruimels</p></li>
-                <li><p class="mrow"><span class="mn">Cr&egrave;me Br&ucirc;l&eacute;e</span><span class="mp">&euro;8.00</span></p>
-                    <p class="md" data-nl="Vanillesiroop, melk naar keuze, matcha, cr&egrave;me br&ucirc;l&eacute;e met gekarameliseerde suiker" data-en="Vanilla syrup, Milk of choice, Matcha, Cr&egrave;me br&ucirc;l&eacute;e with caramelized sugar">Vanillesiroop, melk naar keuze, matcha, cr&egrave;me br&ucirc;l&eacute;e met gekarameliseerde suiker</p></li>
-                <li><p class="mrow"><span class="mn">Coconut Cloud</span><span class="mp">&euro;7.75</span></p>
-                    <p class="md" data-nl="Kokoswater, romige matcha" data-en="Coconut water, Creamy matcha">Kokoswater, romige matcha</p></li>
+              <li><p class="mrow"><span class="mn">Strawberry Shortcake</span><span class="mp">&euro;8.00</span></p>
+                  <p class="md" data-nl="Aardbei, koekjessiroop, melk naar keuze, aardbeien cold foam, koekjeskruimels" data-en="Strawberry, Cookie syrup, Milk of choice, Strawberry cold foam, Cookie crumbs">Aardbei, koekjessiroop, melk naar keuze, aardbeien cold foam, koekjeskruimels</p></li>
+              <li><p class="mrow"><span class="mn">Crème Brûlée</span><span class="mp">&euro;8.00</span></p>
+                  <p class="md" data-nl="Vanillesiroop, melk naar keuze, matcha, crème brûlée met gekarameliseerde suiker" data-en="Vanilla syrup, Milk of choice, Matcha, Crème brûlée with caramelized sugar">Vanillesiroop, melk naar keuze, matcha, crème brûlée met gekarameliseerde suiker</p></li>
+              <li><p class="mrow"><span class="mn">Coconut Cloud</span><span class="mp">&euro;7.75</span></p>
+                  <p class="md" data-nl="Kokoswater, romige matcha" data-en="Coconut water, Creamy matcha">Kokoswater, romige matcha</p></li>
               </ul>
             </section>
           </div>
@@ -318,6 +369,7 @@
        data-en="Menu as shown in store. Feel free to ask us about allergens.">
       Menu zoals in de zaak. Vraag ons gerust naar allergenen.
     </p>
+<!-- /cms:menu -->
   </div>
 </section>
 
@@ -333,6 +385,7 @@
     </p>
 
     <div class="cakes">
+      <!-- cms:cakes -->
       <figure class="cake">
         <img src="assets/gallery/verjaardag-goud.jpg" alt="Roze verjaardagstaart met gouden drip en macarons" loading="lazy" width="670" height="1030">
         <figcaption>
@@ -364,10 +417,11 @@
           <p data-nl="Cakesicles, cupcakes en desserts voor je feest." data-en="Cakesicles, cupcakes and desserts for your party.">Cakesicles, cupcakes en desserts voor je feest.</p>
         </figcaption>
       </figure>
+<!-- /cms:cakes -->
     </div>
 
     <div class="center">
-      <a class="btn btn--pink btn--lg" href="https://wa.me/message/TPX75PMNP3RSJ1" target="_blank" rel="noopener"
+      <a class="btn btn--pink btn--lg" href="https://wa.me/message/TPX75PMNP3RSJ1" target="_blank" rel="noopener noreferrer"
          data-nl="Bestel via WhatsApp" data-en="Order via WhatsApp">Bestel via WhatsApp</a>
       <p class="micro"
          data-nl="Ook voor catering. Bekijk ons werk op Instagram."
@@ -394,6 +448,7 @@
     </p>
 
     <div class="gal">
+      <!-- cms:gallery -->
       <figure class="gal__i">
         <img src="assets/gallery/bruiloft-ruffle.jpg" alt="Tweelaagse bruiloftstaart met ruffles en gipskruid" loading="lazy" width="886" height="1100">
         <figcaption data-nl="Bruiloftstaarten" data-en="Wedding cakes">Bruiloftstaarten</figcaption>
@@ -433,10 +488,11 @@
         <img src="assets/gallery/henna-rozen.jpg" alt="Witte hennataart met rode en witte rozen" loading="lazy" width="503" height="717">
         <figcaption data-nl="Henna &amp; bruiloft" data-en="Henna &amp; wedding">Henna &amp; bruiloft</figcaption>
       </figure>
+<!-- /cms:gallery -->
     </div>
 
     <p class="menu__foot">
-      <a href="https://www.instagram.com/cafefaim/" target="_blank" rel="noopener"
+      <a href="https://www.instagram.com/cafefaim/" target="_blank" rel="noopener noreferrer"
          data-nl="Meer op Instagram → @cafefaim" data-en="More on Instagram → @cafefaim">Meer op Instagram → @cafefaim</a>
     </p>
   </div>
@@ -454,6 +510,7 @@
       <h3 class="visit__h3" data-nl="Openingstijden" data-en="Opening hours">Openingstijden</h3>
       <table class="hours">
         <tbody>
+          <!-- cms:hours-table -->
           <tr><th data-nl="Maandag" data-en="Monday">Maandag</th><td class="closed" data-nl="Gesloten" data-en="Closed">Gesloten</td></tr>
           <tr><th data-nl="Dinsdag" data-en="Tuesday">Dinsdag</th><td>11:00 – 22:00</td></tr>
           <tr><th data-nl="Woensdag" data-en="Wednesday">Woensdag</th><td>11:00 – 22:00</td></tr>
@@ -461,13 +518,14 @@
           <tr><th data-nl="Vrijdag" data-en="Friday">Vrijdag</th><td>11:00 – 23:00</td></tr>
           <tr><th data-nl="Zaterdag" data-en="Saturday">Zaterdag</th><td>11:00 – 23:00</td></tr>
           <tr><th data-nl="Zondag" data-en="Sunday">Zondag</th><td>11:00 – 22:00</td></tr>
+<!-- /cms:hours-table -->
         </tbody>
       </table>
 
       <h3 class="visit__h3" data-nl="Contact" data-en="Contact">Contact</h3>
       <p class="visit__contact">
-        <a href="https://wa.me/message/TPX75PMNP3RSJ1" target="_blank" rel="noopener">WhatsApp</a> ·
-        <a href="https://www.instagram.com/cafefaim/" target="_blank" rel="noopener">@cafefaim</a>
+        <a href="https://wa.me/message/TPX75PMNP3RSJ1" target="_blank" rel="noopener noreferrer">WhatsApp</a> ·
+        <a href="https://www.instagram.com/cafefaim/" target="_blank" rel="noopener noreferrer">@cafefaim</a>
       </p>
     </div>
 
@@ -505,24 +563,26 @@
         5141 GD Waalwijk
       </p>
       <a class="foot__link" href="https://maps.google.com/?q=Stationsstraat+107,+5141GD+Waalwijk"
-         target="_blank" rel="noopener"
+         target="_blank" rel="noopener noreferrer"
          data-nl="Route →" data-en="Directions →">Route →</a>
     </div>
 
     <div class="foot__col">
       <h4 data-nl="Openingstijden" data-en="Opening hours">Openingstijden</h4>
       <ul class="foot__hours">
+        <!-- cms:hours-footer -->
         <li><span data-nl="Maandag" data-en="Monday">Maandag</span><em data-nl="Gesloten" data-en="Closed">Gesloten</em></li>
         <li><span data-nl="Di – Wo" data-en="Tue – Wed">Di – Wo</span><em>11:00–22:00</em></li>
         <li><span data-nl="Do – Za" data-en="Thu – Sat">Do – Za</span><em>11:00–23:00</em></li>
         <li><span data-nl="Zondag" data-en="Sunday">Zondag</span><em>11:00–22:00</em></li>
+<!-- /cms:hours-footer -->
       </ul>
     </div>
 
     <div class="foot__col">
       <h4 data-nl="Volg &amp; bestel" data-en="Follow &amp; order">Volg &amp; bestel</h4>
-      <a class="foot__link" href="https://www.instagram.com/cafefaim/" target="_blank" rel="noopener">Instagram</a>
-      <a class="foot__link" href="https://wa.me/message/TPX75PMNP3RSJ1" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="foot__link" href="https://www.instagram.com/cafefaim/" target="_blank" rel="noopener noreferrer">Instagram</a>
+      <a class="foot__link" href="https://wa.me/message/TPX75PMNP3RSJ1" target="_blank" rel="noopener noreferrer">WhatsApp</a>
     </div>
 
   </div>

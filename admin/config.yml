@@ -1,0 +1,218 @@
+# =========================================================
+# Café Faim — Decap CMS config
+#
+# auth_type: pkce means logging in happens straight against GitHub from
+# the browser — no separate OAuth-proxy server to host. You still need to
+# create a GitHub App once (Settings → Developer settings → GitHub Apps)
+# and paste its Client ID below as app_id. See admin/README.md for the
+# exact steps.
+#
+# Every save here commits a JSON file in content/ straight to the `main`
+# branch. The GitHub Actions workflow (.github/workflows/deploy.yml) then
+# runs `node build.js` to fold that content into index.html and deploys.
+# Nothing here writes to index.html directly.
+# =========================================================
+
+backend:
+  name: github
+  repo: ibrahim-mursal/CafeFaim
+  branch: main
+  auth_type: pkce
+  app_id: REPLACE_WITH_GITHUB_APP_CLIENT_ID
+
+# Lets `npx decap-server` stand in for the real GitHub backend when this
+# admin page is opened from localhost — saves write straight to the local
+# content/*.json files on disk, no login, no GitHub App needed. Decap only
+# activates this when the page itself is served from localhost/127.0.0.1,
+# so it's a no-op (and harmless to leave in) once this is live in production.
+local_backend: true
+
+# Gallery/cake photo uploads land in assets/gallery, matching where
+# index.html and content/*.json already expect them.
+media_folder: assets/gallery
+public_folder: assets/gallery
+
+collections:
+  - name: hero
+    label: "Hero tekst"
+    description: "De tekst bovenaan de site: het typewriter-woord, de titel en de knoppen."
+    files:
+      - file: content/hero.json
+        name: hero
+        label: "Hero tekst"
+        fields:
+          - label: "Eyebrow (kleine tekst boven de titel)"
+            name: eyebrow
+            widget: object
+            fields: &bi
+              - { label: Nederlands, name: nl, widget: string }
+              - { label: "Engels (leeg = geen aparte vertaling)", name: en, widget: string, required: false }
+          - label: "Typewriter-woorden (worden om de beurt getypt)"
+            name: type_words
+            widget: list
+            fields: *bi
+          - { label: "Hoofdtitel (roze regel, één taal)", name: headline, widget: string }
+          - label: "Subtekst"
+            name: sub
+            widget: object
+            fields: *bi
+          - label: "Knop: 'Bekijk het menu'"
+            name: cta_menu
+            widget: object
+            fields: *bi
+          - label: "Knop: 'Taart op maat'"
+            name: cta_custom
+            widget: object
+            fields: *bi
+
+  - name: hours
+    label: "Openingstijden"
+    description: "Wijzigingen hier werken automatisch door in de urentabel, de footer-samenvatting én de Google-structured-data van de site."
+    files:
+      - file: content/hours.json
+        name: hours
+        label: "Openingstijden"
+        fields:
+          - label: Dagen
+            name: days
+            widget: list
+            summary: "{{fields.day}} — {{fields.closed}}"
+            fields:
+              - label: Dag
+                name: day
+                widget: select
+                options:
+                  - { label: Maandag, value: monday }
+                  - { label: Dinsdag, value: tuesday }
+                  - { label: Woensdag, value: wednesday }
+                  - { label: Donderdag, value: thursday }
+                  - { label: Vrijdag, value: friday }
+                  - { label: Zaterdag, value: saturday }
+                  - { label: Zondag, value: sunday }
+              - { label: Gesloten die dag, name: closed, widget: boolean, default: false }
+              - { label: "Open vanaf (HH:MM)", name: open, widget: string, required: false, pattern: ['^([01]\d|2[0-3]):[0-5]\d$', "Gebruik het formaat UU:MM, bv. 11:00"] }
+              - { label: "Open tot (HH:MM)", name: close, widget: string, required: false, pattern: ['^([01]\d|2[0-3]):[0-5]\d$', "Gebruik het formaat UU:MM, bv. 22:00"] }
+
+  - name: menu
+    label: Menukaart
+    description: "De volledige lunch- en drankenkaart met prijzen."
+    files:
+      - file: content/menu.json
+        name: menu
+        label: Menu
+        fields:
+          - label: Lunch
+            name: lunch
+            widget: object
+            fields:
+              - label: Titel
+                name: title
+                widget: object
+                fields: *bi
+              - label: "Kolom 1"
+                name: column1
+                widget: list
+                types: &menuBlockTypes
+                  - label: "Groep met prijzen (bv. Broodjes)"
+                    name: group
+                    summary: "{{fields.heading.nl}}"
+                    fields:
+                      - { label: Titel, name: heading, widget: object, fields: *bi }
+                      - { label: "Compacte weergave (minder ruimte tussen items)", name: tight, widget: boolean, default: false, required: false }
+                      - label: Items
+                        name: items
+                        widget: list
+                        summary: "{{fields.name.nl}} — €{{fields.price}}"
+                        fields: &menuItemFields
+                          - { label: Naam, name: name, widget: object, fields: *bi }
+                          - { label: "Prijs (zonder €-teken, bv. 8.95)", name: price, widget: string }
+                          - { label: "Toon 'Vanaf' voor de prijs", name: from, widget: boolean, default: false, required: false }
+                          - { label: Beschrijving, name: desc, widget: object, required: false, fields: *bi }
+                  - label: "Genoemde lijst zonder prijzen (bv. Gebak)"
+                    name: names-box
+                    summary: "{{fields.heading.nl}}"
+                    fields:
+                      - { label: Titel, name: heading, widget: object, fields: *bi }
+                      - { label: Introtekst, name: lead, widget: object, fields: *bi }
+                      - { label: Items, name: items, widget: list, summary: "{{fields.nl}}", fields: *bi }
+                      - { label: Voetnoot, name: note, widget: object, fields: *bi }
+                  - label: "Kader met prijzen (bv. Extra's)"
+                    name: priced-box
+                    summary: "{{fields.heading.nl}}"
+                    fields:
+                      - { label: Titel, name: heading, widget: object, fields: *bi }
+                      - { label: "Compacte weergave", name: tight, widget: boolean, default: false, required: false }
+                      - { label: Items, name: items, widget: list, fields: *menuItemFields }
+                  - label: "Uitgelicht roze kader (bv. Matcha)"
+                    name: feature
+                    summary: "{{fields.badge.nl}}"
+                    fields:
+                      - { label: "Badge tekst (bv. Huisfavoriet)", name: badge, widget: object, fields: *bi }
+                      - label: Subgroepen
+                        name: groups
+                        widget: list
+                        summary: "{{fields.heading.nl}}"
+                        fields:
+                          - { label: Titel, name: heading, widget: object, fields: *bi }
+                          - { label: "Kleinere subkop", name: sub, widget: boolean, default: false, required: false }
+                          - { label: Items, name: items, widget: list, fields: *menuItemFields }
+              - label: "Kolom 2"
+                name: column2
+                widget: list
+                types: *menuBlockTypes
+              - label: "Tekst onder lunchkaart (bv. 'Lunch tot 15:00')"
+                name: till
+                widget: object
+                fields: *bi
+
+          - label: Dranken
+            name: dranken
+            widget: object
+            fields:
+              - { label: Titel, name: title, widget: object, fields: *bi }
+              - { label: "Kolom 1", name: column1, widget: list, types: *menuBlockTypes }
+              - { label: "Kolom 2", name: column2, widget: list, types: *menuBlockTypes }
+
+          - label: "Voetnoot onder de hele menukaart"
+            name: footnote
+            widget: object
+            fields: *bi
+
+  - name: gallery
+    label: "In beeld (fotogalerij)"
+    description: "De 8 foto's in de 'In beeld' sectie."
+    files:
+      - file: content/gallery.json
+        name: gallery
+        label: Galerij
+        fields:
+          - label: Foto's
+            name: items
+            widget: list
+            summary: "{{fields.caption.nl}}"
+            fields:
+              - { label: Foto, name: image, widget: image }
+              - { label: "Alt-tekst (voor schermlezers/SEO)", name: alt, widget: string }
+              - { label: "Breedte (px)", name: width, widget: number, value_type: int }
+              - { label: "Hoogte (px)", name: height, widget: number, value_type: int }
+              - { label: Bijschrift, name: caption, widget: object, fields: *bi }
+
+  - name: cakes
+    label: "Taarten op maat (kaarten)"
+    description: "De 4 kaarten in de 'Taarten op maat' sectie."
+    files:
+      - file: content/cakes.json
+        name: cakes
+        label: Taarten
+        fields:
+          - label: Kaarten
+            name: items
+            widget: list
+            summary: "{{fields.title.nl}}"
+            fields:
+              - { label: Foto, name: image, widget: image }
+              - { label: "Alt-tekst (voor schermlezers/SEO)", name: alt, widget: string }
+              - { label: "Breedte (px)", name: width, widget: number, value_type: int }
+              - { label: "Hoogte (px)", name: height, widget: number, value_type: int }
+              - { label: Titel, name: title, widget: object, fields: *bi }
+              - { label: Beschrijving, name: desc, widget: object, fields: *bi }

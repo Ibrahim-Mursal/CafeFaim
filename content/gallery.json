@@ -1,0 +1,12 @@
+{
+  "items": [
+    { "image": "assets/gallery/bruiloft-ruffle.jpg", "alt": "Tweelaagse bruiloftstaart met ruffles en gipskruid", "width": 886, "height": 1100, "caption": { "nl": "Bruiloftstaarten", "en": "Wedding cakes" } },
+    { "image": "assets/gallery/babyshower-vlinder.jpg", "alt": "Roze babyshowertaart met gouden silhouet en vlinders", "width": 1100, "height": 1087, "caption": { "nl": "Babyshower", "en": "Baby shower" } },
+    { "image": "assets/gallery/verjaardag-goud.jpg", "alt": "Roze verjaardagstaart met gouden drip en macarons", "width": 670, "height": 1030, "caption": { "nl": "Verjaardagstaarten", "en": "Birthday cakes" } },
+    { "image": "assets/gallery/sweettable-box.jpg", "alt": "Sweet table box met cakesicles, cupcakes en gouden details", "width": 667, "height": 1025, "caption": { "nl": "Sweet tables", "en": "Sweet tables" } },
+    { "image": "assets/gallery/ohbaby-drip.jpg", "alt": "Roze 'Oh Baby' taart met witte chocoladedrip", "width": 648, "height": 1100, "caption": { "nl": "Oh Baby", "en": "Oh Baby" } },
+    { "image": "assets/gallery/kinder-pikachu.jpg", "alt": "Kindertaart met Pikachu en gele botercrème", "width": 1100, "height": 1096, "caption": { "nl": "Kindertaarten", "en": "Kids' cakes" } },
+    { "image": "assets/gallery/bridetobe-anjers.jpg", "alt": "Bride to be taart met anjers en witte ruffles", "width": 827, "height": 1100, "caption": { "nl": "Bride to be", "en": "Bride to be" } },
+    { "image": "assets/gallery/henna-rozen.jpg", "alt": "Witte hennataart met rode en witte rozen", "width": 503, "height": 717, "caption": { "nl": "Henna & bruiloft", "en": "Henna & wedding" } }
+  ]
+}

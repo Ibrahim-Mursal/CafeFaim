@@ -1,0 +1,63 @@
+name: Build and deploy
+
+# Runs on every push to main — including the commits Decap CMS makes
+# straight to this branch when someone saves an edit in /admin.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Regenerates the CMS-editable regions of index.html from
+      # content/*.json — see build.js. This does not commit back to the
+      # branch; it only affects the artifact deployed below, so a stray
+      # local build someone forgot to run can't drift the repo.
+      - name: Build content into index.html
+        run: node build.js
+
+      # Stage only what's actually the site — path: . on the upload step
+      # below would otherwise publish the whole repo checkout (.git,
+      # node_modules, package.json, build.js) as part of the live site.
+      - name: Stage site files
+        run: |
+          mkdir -p dist
+          cp index.html style.css script.js robots.txt dist/
+          cp -r assets dist/
+          cp -r admin dist/
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
