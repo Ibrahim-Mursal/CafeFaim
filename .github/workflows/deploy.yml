@@ -36,10 +36,13 @@ jobs:
       # Stage only what's actually the site — path: . on the upload step
       # below would otherwise publish the whole repo checkout (.git,
       # node_modules, package.json, build.js) as part of the live site.
+      # See DEPLOY.md for the matching Cloudflare Pages build command —
+      # cafefaim.nl points there, so this GitHub Pages deploy is now a
+      # secondary/staging copy at the .github.io URL, not the live site.
       - name: Stage site files
         run: |
           mkdir -p dist
-          cp index.html style.css script.js robots.txt dist/
+          cp index.html style.css script.js robots.txt sitemap.xml dist/
           cp -r assets dist/
           cp -r admin dist/
 

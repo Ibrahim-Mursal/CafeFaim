@@ -111,6 +111,19 @@ function buildOpeningHoursSpecification() {
     }));
 }
 
+/* ---------- HERO: background video ---------- */
+const VIDEO_MIME_TYPES = {
+  mp4: 'video/mp4',
+  webm: 'video/webm',
+  ogv: 'video/ogg',
+  mov: 'video/quicktime' // plays in Safari; most other browsers won't decode it — admin/README.md notes this
+};
+function renderHeroVideo() {
+  const ext = hero.background_video.split('.').pop().toLowerCase();
+  const mime = VIDEO_MIME_TYPES[ext] || 'video/mp4';
+  return `    <source src="${esc(hero.background_video)}" type="${mime}">`;
+}
+
 /* ---------- HERO ---------- */
 function renderHero() {
   const words = hero.type_words
@@ -288,6 +301,7 @@ function spliceRegion(html, name, content) {
 /* ---------- assemble ---------- */
 let html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 
+html = spliceRegion(html, 'hero-video', renderHeroVideo());
 html = spliceRegion(html, 'hero', renderHero());
 html = spliceRegion(html, 'menu', renderMenu());
 html = spliceRegion(html, 'cakes', renderCakes());

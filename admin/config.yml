@@ -34,13 +34,19 @@ public_folder: assets/gallery
 
 collections:
   - name: hero
-    label: "Hero tekst"
-    description: "De tekst bovenaan de site: het typewriter-woord, de titel en de knoppen."
+    label: "Hero (video + tekst)"
+    description: "De achtergrondvideo en tekst bovenaan de site: het typewriter-woord, de titel en de knoppen."
     files:
       - file: content/hero.json
         name: hero
-        label: "Hero tekst"
+        label: "Hero"
         fields:
+          - label: "Achtergrondvideo"
+            name: background_video
+            widget: file
+            hint: "Gebruik .mp4 voor de beste compatibiliteit — .mov speelt niet overal af. Deze video start automatisch en loopt door, dus houd het bestand klein (een paar MB) zodat de site snel blijft laden."
+            media_folder: "assets/video"
+            public_folder: "assets/video"
           - label: "Eyebrow (kleine tekst boven de titel)"
             name: eyebrow
             widget: object

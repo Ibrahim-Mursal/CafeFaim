@@ -13,15 +13,18 @@
      frame-ancestors/sandbox/report-* are silently ignored by the HTML meta
      delivery method (CSP spec) — those need a real HTTP header from
      whatever host this ends up on. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-5JWz2pFlxEjBn60lOlhminb3At6YloWzeus5DqPU7W8=' 'sha256-6ujkW6WZbsDNk7REVo161dSm4o5LSEphD2asVpjCEbg='; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; frame-src https://maps.google.com https://www.google.com; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-5JWz2pFlxEjBn60lOlhminb3At6YloWzeus5DqPU7W8=' 'sha256-rFsRnKBrT61Am8bIWkl+RdlYQagKymyQP83CoTgR/aY='; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; frame-src https://maps.google.com https://www.google.com; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 
 <title>Café Faim — Café · Lunch · Patisserie in Waalwijk</title>
 
 <meta name="description" content="Café Faim in Waalwijk — coffee, matcha, lunch en patisserie. Elke dag vers gemaakt, 100% halal. Ook custom taarten op maat via WhatsApp.">
+<link rel="canonical" href="https://cafefaim.nl/">
 <meta property="og:title" content="Café Faim — Café · Lunch · Patisserie">
 <meta property="og:description" content="Coffee · Matcha · Lunch · Pastries. Elke dag vers, 100% halal. Stationsstraat 107, Waalwijk.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://cafefaim.nl/">
+<meta property="og:image" content="https://cafefaim.nl/assets/logo.jpg">
 <meta name="theme-color" content="#FAF6EC">
 <!-- Opt out of algorithmic dark mode. Samsung Internet / Chrome force-dark
      otherwise inverts the cream + pink palette into brown-black. -->
@@ -40,6 +43,7 @@
   "@context": "https://schema.org",
   "@type": "CafeOrCoffeeShop",
   "name": "Café Faim",
+  "url": "https://cafefaim.nl/",
   "slogan": "We cake you happy!",
   "servesCuisine": [
     "Café",
@@ -127,7 +131,9 @@
 <!-- ============ HERO ============ -->
 <section class="hero" id="top">
   <video class="hero__bg" autoplay muted loop playsinline preload="auto" aria-hidden="true" tabindex="-1" disablePictureInPicture disableRemotePlayback>
+    <!-- cms:hero-video -->
     <source src="assets/video/hero.mp4" type="video/mp4">
+<!-- /cms:hero-video -->
   </video>
   <div class="hero__scrim" aria-hidden="true"></div>
 

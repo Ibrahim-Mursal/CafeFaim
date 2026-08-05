@@ -1,0 +1,32 @@
+# =========================================================
+# Café Faim — Cloudflare Pages response headers
+#
+# This is what GitHub Pages can't do (no custom header support at all) —
+# see the note in .htaccess, which is the same intent for an Apache host
+# and does nothing on Cloudflare. Cloudflare Pages reads this file
+# automatically; no build step needed for it to take effect.
+#
+# CSP itself is already set via <meta> in index.html and admin/index.html
+# (build.js keeps its script-src hashes in sync with the actual inline
+# scripts on every build). The one thing meta CAN'T deliver is
+# frame-ancestors — the CSP spec explicitly ignores it when set via meta —
+# so that's the one CSP directive repeated here as a real header. Having
+# both a meta CSP and a header CSP is safe: browsers enforce the
+# intersection of all delivered policies, not just the last one.
+# =========================================================
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=(), usb=(), interest-cohort=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+/
+  Content-Security-Policy: frame-ancestors 'none'
+
+/index.html
+  Content-Security-Policy: frame-ancestors 'none'
+
+/admin/*
+  Content-Security-Policy: frame-ancestors 'none'
