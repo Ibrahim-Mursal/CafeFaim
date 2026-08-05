@@ -6,20 +6,31 @@ Everything on the code side is ready — `_headers` (security headers),
 account-level steps that need your own logins, so they can't be done for
 you. This is a one-time setup.
 
-## 1. Connect the repo to Cloudflare Pages
+## 1. Connect the repo to Cloudflare
 
 1. Sign up / log into [Cloudflare](https://dash.cloudflare.com) (free tier is enough).
-2. **Workers & Pages → Create → Pages → Connect to Git**, pick the
+2. **Workers & Pages → Create → Connect to Git**, pick the
    `ibrahim-mursal/CafeFaim` repo.
-3. Build settings:
-   - **Framework preset**: None
+3. Cloudflare's onboarding now routes new Git projects through its unified
+   Workers builder (deploys via `wrangler deploy`) rather than the older,
+   separate Pages flow (which used a "build output directory" field) —
+   which one you land on can vary. Fill in whichever fields that screen
+   actually shows:
    - **Build command**:
      ```
      node build.js && mkdir -p dist && cp index.html style.css script.js robots.txt sitemap.xml _headers dist/ && cp -r assets dist/ && cp -r admin dist/
      ```
-   - **Build output directory**: `dist`
-4. Deploy. Cloudflare gives you a working `*.pages.dev` URL immediately —
-   check it loads correctly before moving on to the domain.
+   - **If there's a "Build output directory" field** (classic Pages
+     flow): set it to `dist`.
+   - **If there's a "Deploy command" field instead**, pre-filled with
+     `npx wrangler deploy` (unified Workers flow): leave it as-is —
+     `wrangler.jsonc` at the repo root already tells it the static files
+     live in `dist/`, so no extra field to fill in for output location.
+   - **Project name**: whatever Cloudflare suggests (e.g. `cafefaim`) is
+     fine — it doesn't need to match anything else in the repo.
+4. Deploy. Cloudflare gives you a working preview URL immediately
+   (`*.pages.dev` or `*.workers.dev` depending on which flow) — check it
+   loads correctly before moving on to the domain.
 
 ## 2. Point cafefaim.nl at it
 

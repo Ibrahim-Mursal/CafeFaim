@@ -1,0 +1,13 @@
+{
+  // Cloudflare's unified Workers/Pages deploy config. This project has no
+  // server-side Worker code at all — it's a plain static site — so the
+  // only thing wrangler needs to know is where the built files live.
+  // The build command (set in the Cloudflare dashboard, not here) runs
+  // `node build.js` and stages the result into dist/ before this config
+  // tells `wrangler deploy` to publish that folder as static assets.
+  "name": "cafefaim",
+  "compatibility_date": "2026-08-05",
+  "assets": {
+    "directory": "dist"
+  }
+}
