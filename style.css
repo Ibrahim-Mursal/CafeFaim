@@ -147,7 +147,7 @@ a:hover{text-decoration:underline}
    without needing to invent a second color treatment just for this section. */
 .hero__scrim{
   position:absolute;inset:0;z-index:1;
-  background:linear-gradient(180deg, rgba(24,26,20,.6), rgba(24,26,20,.4) 45%, rgba(24,26,20,.62));
+  background:linear-gradient(180deg, rgba(24,26,20,.70), rgba(24,26,20,.70) 45%, rgba(24,26,20,.55));
 }
 .hero__inner{position:relative;z-index:3;text-align:center;padding-bottom:clamp(70px,9vw,110px)}
 .eyebrow{

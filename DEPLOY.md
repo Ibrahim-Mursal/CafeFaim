@@ -34,22 +34,22 @@ you. This is a one-time setup.
 
 ## 2. Point cafefaim.nl at it
 
-Simplest path: move the domain's nameservers to Cloudflare (also gets you
-free DNS + the CDN/DDoS protection layer for the whole domain, not just
-the site).
+Confirmed live at `cafefaim.ibrahimmursal2004.workers.dev` — this went
+through Cloudflare's Workers flow, so custom domains are attached to the
+Worker itself, not a separate "Pages project" screen.
 
 1. **Cloudflare → Add a site → cafefaim.nl**. Cloudflare scans existing
    DNS records and shows you two nameservers.
 2. At whichever registrar `cafefaim.nl` is registered with, replace its
    nameservers with the two Cloudflare gives you. (Propagation is usually
-   under an hour, sometimes up to 24h.)
-3. Back in the Pages project → **Custom domains → Set up a domain** →
-   enter `cafefaim.nl`. Cloudflare issues the SSL certificate and wires
-   the DNS record automatically since it's already managing the zone.
-
-*(If you'd rather not move nameservers, Cloudflare Pages also accepts a
-CNAME record instead — the "Custom domains" screen shows that option too,
-just with a manual DNS step at your current registrar each time.)*
+   under an hour, sometimes up to 24h — the zone needs to show "Active" in
+   Cloudflare before the next step works.)
+3. **Workers & Pages → cafefaim → Settings → Domains & Routes → Add →
+   Custom Domain** → enter `cafefaim.nl`. Cloudflare issues the SSL
+   certificate and wires the DNS record automatically since it now
+   manages the zone.
+4. Repeat for `www.cafefaim.nl` if you want that to work too (optional —
+   plenty of sites only serve the bare domain).
 
 ## 3. Update the admin login's callback URL
 
