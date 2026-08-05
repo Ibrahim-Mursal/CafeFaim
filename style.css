@@ -10,7 +10,9 @@
   --cream:#FAF6EC;
   --cream-deep:#F2EDE0;
   --pink:#E48CAF;
-  --pink-hot:#EC1C79;
+  /* Darkened from the brand's #EC1C79 for AA text contrast (was ~3.9:1 on
+     cream, now ~5.3:1) — see .mn/.kicker/plain-link usage sitewide. */
+  --pink-hot:#C41368;
   --pink-soft:#F8DCE6;
   --sage:#C3DDAE;
   --green-dark:#33502A;
@@ -305,8 +307,28 @@ a:hover{text-decoration:underline}
   font-size:clamp(1.15rem,2vw,1.45rem);
   color:var(--pink-hot);
 }
-.mcol > .mgrp:has(> .mgrp__h--sub){
-  border-top:1px solid rgba(195,221,174,.7);
+
+/* signature box — Matcha + Specials, the house favourites, get the
+   same boxed treatment as Pastries/Extra's but in pink to read as
+   "the thing to order" rather than reference info. */
+.mfeature{
+  display:flex;flex-direction:column;gap:26px;
+  border:1.5px solid var(--pink);
+  background:linear-gradient(180deg,rgba(248,220,230,.45),rgba(248,220,230,0) 65%);
+  border-radius:14px;
+  padding:26px 22px 22px;
+  position:relative;
+}
+.mfeature__badge{
+  position:absolute;top:-13px;left:22px;
+  background:var(--pink-hot);color:#fff;
+  font-family:var(--f-display);font-weight:600;font-size:.7rem;
+  letter-spacing:.08em;text-transform:uppercase;
+  padding:5px 14px;border-radius:99px;
+}
+.mfeature > .mgrp:first-child{border-top:0;padding-top:0}
+.mfeature > .mgrp:has(> .mgrp__h--sub){
+  border-top:1px solid rgba(228,140,175,.45);
   padding-top:14px;margin-top:-8px;
 }
 
@@ -403,6 +425,7 @@ a:hover{text-decoration:underline}
   .mlist--2col{grid-template-columns:1fr}
   .mbox{padding:18px 16px 20px}
   .mbox__list{grid-template-columns:1fr;gap:4px}
+  .mfeature{padding:22px 16px 18px;gap:22px}
 }
 
 
@@ -525,7 +548,6 @@ a:hover{text-decoration:underline}
   margin-bottom:8px;
 }
 .foot__col .foot__link{display:block}
-.foot__btn{margin-top:12px}
 
 .foot__hours{list-style:none;font-size:.9rem}
 .foot__hours li{
@@ -716,7 +738,6 @@ html{scrollbar-color:var(--pink) var(--cream-deep)}
   .foot__blurb{max-width:34ch}
   .foot__hours{max-width:270px;margin:0 auto}
   .foot__col .foot__link{display:inline-block;margin:0 10px 8px}
-  .foot__btn{display:inline-block;margin-top:14px}
   .foot__copy{padding-bottom:38px;line-height:1.7}
 }
 
