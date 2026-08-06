@@ -138,14 +138,7 @@ a:hover{text-decoration:underline}
   font-size:clamp(2.7rem,8.5vw,6rem);font-weight:700;letter-spacing:-.025em;
   margin-bottom:26px;
 }
-/* Both hero lines share one entrance — fade in while settling from a
-   whisper of scale — staggered so "Zoet," lands first and the punchline
-   follows a beat later, timed to finish alongside the cup's line-art
-   drawing itself in below (see .hero__cup path). One authored moment,
-   not two unrelated effects. The fade covers the scale change; scaling
-   already-visible text reads as a glitch, not an entrance. Implicit
-   "to" frame = computed style. Center origin: the text is centered, so
-   both edges settle symmetrically. */
+
 .hero__title .t-green,.hero__title .t-pink{display:inline-block;transform-origin:center}
 @keyframes hero-line-in{from{opacity:0;transform:scale(.96)}}
 .hero__title.rv.in .t-green{animation:hero-line-in 600ms cubic-bezier(.16,1,.3,1) 150ms both}
@@ -172,36 +165,8 @@ a:hover{text-decoration:underline}
   color:var(--green-dark);
 }
 .hero__cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.hero__cup{
-  position:absolute;right:-40px;bottom:20px;width:210px;color:var(--pink);
-  opacity:.5;pointer-events:none;
-}
-/* Reveal already fades/lifts .hero__cup like its siblings (.rv/.rv.in
-   below); .rv.in's opacity:1 would otherwise clobber the intended .5
-   translucency, so restore it here with matching specificity. */
-.hero__cup.rv.in{opacity:.5}
 
-/* Hand-drawn line art draws itself on — the one bespoke entrance this
-   brand earns, echoing the actual hand-drawn cup illustration from the
-   opening poster. Dasharray is a generous overestimate of each path's
-   real length so no getTotalLength() JS is needed; the draw still
-   completes fully by the time dashoffset reaches 0. */
-.hero__cup path{
-  stroke-dasharray:500;
-  stroke-dashoffset:500;
-  animation-timing-function:cubic-bezier(.16,1,.3,1);
-  animation-fill-mode:forwards;
-}
-.hero__cup path:nth-child(1){animation-duration:700ms;animation-delay:0ms}
-.hero__cup path:nth-child(2){animation-duration:450ms;animation-delay:400ms}
-.hero__cup path:nth-child(3){animation-duration:500ms;animation-delay:700ms}
-.hero__cup.rv.in path{animation-name:draw-cup}
-@keyframes draw-cup{to{stroke-dashoffset:0}}
 
-/* checkerboard strip — from their opening poster.
-   Tile must be the SAME size as the strip height, so the full 2x2
-   conic tile is visible. A larger tile only shows its top row and
-   degrades into vertical stripes. */
 .checker{
   height:26px;
   background:
@@ -573,12 +538,7 @@ a:hover{text-decoration:underline}
 html.js body{opacity:0;transition:opacity .45s var(--ease)}
 html.js body.ready{opacity:1}
 
-/* scroll reveal — a one-shot animation, not a transition: a transition
-   list would permanently override the element's own transitions (cake
-   cards inherited the .65s + stagger delay on hover), while a finished
-   backwards-fill animation stops applying entirely. The implicit "to"
-   frame is each element's computed style, so .hero__cup still lands on
-   its .5 opacity. */
+
 .rv{opacity:0;transform:translateY(22px)}
 .rv.in{opacity:1;transform:none;animation:rv-in .65s var(--ease) backwards}
 @keyframes rv-in{from{opacity:0;transform:translateY(22px)}}
@@ -621,7 +581,6 @@ html{scrollbar-color:var(--pink) var(--cream-deep)}
   .card--wide{grid-column:span 1}
   /* gallery stays 4-up here; it drops to 2 at 640px */
   /* the cup sits over the CTAs once they go full-width — retire it */
-  .hero__cup{display:none}
   .cake img{aspect-ratio:1/1}
 }
 
@@ -747,10 +706,6 @@ html{scrollbar-color:var(--pink) var(--cream-deep)}
   .rv{opacity:1!important;transform:none!important}
   body{opacity:1!important}
   .gal__i figcaption{opacity:1;transform:none}
-  /* animation:none above stops the draw-cup keyframe, but stroke-dashoffset
-     is a plain (non-animation) property and would otherwise stay at its
-     pre-animation value forever, leaving the cup permanently undrawn. */
-  .hero__cup path{stroke-dashoffset:0}
 }
 @media print{
   .nav,.hero__cta,.ticker,.map,.checker,.burger{display:none}
