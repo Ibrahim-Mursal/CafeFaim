@@ -128,31 +128,11 @@ a:hover{text-decoration:underline}
 .btn--lg{padding:16px 38px;font-size:1.1rem}
 
 /* ---------- hero ---------- */
-/* isolation:isolate scopes z-index below to this section only, so the
-   video/scrim layering can't leak into or collide with unrelated z-index
-   elsewhere on the page (nav is z-index:100, for instance). */
-.hero{position:relative;padding:clamp(64px,10vw,116px) 0 0;overflow:hidden;isolation:isolate;background:var(--green-dark)}
-/* Background video for the hero only. object-fit:cover fills the section
-   regardless of the source clip's own aspect ratio. background:var(--green-dark)
-   on .hero above is the fallback shown before the video has a frame ready,
-   and stays visible if video playback fails entirely (slow connection,
-   data-saver mode, format unsupported) — it's a real brand color, not just
-   a loading placeholder, so text over it stays legible either way. */
-.hero__bg{
-  position:absolute;inset:0;z-index:0;
-  width:100%;height:100%;object-fit:cover;object-position:center;
-}
-/* Darkens the video enough that the hero's existing pink/sage/cream text
-   colors (unchanged below) stay readable over arbitrary video content,
-   without needing to invent a second color treatment just for this section. */
-.hero__scrim{
-  position:absolute;inset:0;z-index:1;
-  background:linear-gradient(180deg, rgba(24,26,20,.70), rgba(24,26,20,.70) 45%, rgba(24,26,20,.55));
-}
-.hero__inner{position:relative;z-index:3;text-align:center;padding-bottom:clamp(70px,9vw,110px)}
+.hero{position:relative;padding:clamp(64px,10vw,116px) 0 0;overflow:hidden}
+.hero__inner{position:relative;text-align:center;padding-bottom:clamp(70px,9vw,110px)}
 .eyebrow{
   font-family:var(--f-display);font-weight:500;letter-spacing:.22em;
-  text-transform:uppercase;font-size:.8rem;color:var(--cream);margin-bottom:22px;
+  text-transform:uppercase;font-size:.8rem;color:var(--green-dark);margin-bottom:22px;
 }
 .hero__title{
   font-size:clamp(2.7rem,8.5vw,6rem);font-weight:700;letter-spacing:-.025em;
@@ -189,14 +169,12 @@ a:hover{text-decoration:underline}
 
 .hero__sub{
   max-width:560px;margin:0 auto 34px;font-size:clamp(1.02rem,2vw,1.2rem);
-  color:rgba(250,246,236,.92);
+  color:var(--green-dark);
 }
 .hero__cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.hero__cta .btn--ghost{border-color:var(--cream);color:var(--cream)}
-.hero__cta .btn--ghost:hover{background:var(--cream);color:var(--green-dark)}
 .hero__cup{
   position:absolute;right:-40px;bottom:20px;width:210px;color:var(--pink);
-  opacity:.5;pointer-events:none;z-index:2;
+  opacity:.5;pointer-events:none;
 }
 /* Reveal already fades/lifts .hero__cup like its siblings (.rv/.rv.in
    below); .rv.in's opacity:1 would otherwise clobber the intended .5
@@ -231,11 +209,6 @@ a:hover{text-decoration:underline}
     0 0/26px 26px;
   opacity:.9;
 }
-/* Inside .hero, the checker strip is a static (non-positioned) sibling of
-   the positioned video/scrim/cup layers — without its own position+z-index
-   it would paint underneath them (static content paints before positioned
-   descendants) and the video would hide it entirely. */
-.hero .checker{position:relative;z-index:2}
 
 /* ---------- ticker ---------- */
 .ticker{
@@ -397,6 +370,13 @@ a:hover{text-decoration:underline}
 }
 .md strong{color:var(--green-dark);font-weight:700}
 
+/* two-column price list for the long soft-drinks run */
+.mlist--2col{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px 26px;
+}
+
 /* outlined boxes — Pastries and Extra's */
 .mbox{
   border:1.5px solid var(--sage);
@@ -442,6 +422,7 @@ a:hover{text-decoration:underline}
   .mn{font-size:.95rem}
   .mp{font-size:.94rem}
   .md{font-size:.79rem}
+  .mlist--2col{grid-template-columns:1fr}
   .mbox{padding:18px 16px 20px}
   .mbox__list{grid-template-columns:1fr;gap:4px}
   .mfeature{padding:22px 16px 18px;gap:22px}
@@ -487,12 +468,30 @@ a:hover{text-decoration:underline}
   margin:0;
 }
 
-.gal__i img{
+.gal__i img,.gal__i .ph{
   width:100%;height:100%;object-fit:cover;display:block;
   transition:transform .5s var(--ease);
 }
-.gal__i:hover img{transform:scale(1.04)}
+.gal__i:hover img,.gal__i:hover .ph{transform:scale(1.04)}
 
+/* placeholder tile — also acts as a shot list */
+.ph{
+  display:grid;place-items:center;position:relative;
+  background:linear-gradient(140deg,var(--pink-soft) 0%,#fff 55%,var(--sage) 160%);
+}
+.ph--green{background:linear-gradient(140deg,var(--sage) 0%,#fff 60%,var(--pink-soft) 165%)}
+.ph--soft{background:linear-gradient(140deg,#fff 0%,var(--pink-soft) 70%,var(--pink) 190%)}
+.ph__m{
+  font-family:var(--f-display);font-weight:700;font-size:2rem;
+  color:var(--pink);opacity:.5;letter-spacing:-.02em;
+}
+/* shows the art director which photo belongs here */
+.ph::after{
+  content:attr(data-shot);
+  position:absolute;left:12px;right:12px;bottom:12px;
+  font-size:.68rem;line-height:1.35;color:var(--green-dark);opacity:.55;
+  text-align:center;font-weight:500;
+}
 .gal__i figcaption{
   position:absolute;left:0;right:0;bottom:0;
   padding:26px 16px 13px;
@@ -610,11 +609,16 @@ html{scrollbar-color:var(--pink) var(--cream-deep)}
 }
 .visit__contact a:hover,.foot__col a:hover,.menu__foot a:hover{background-size:100% 1.5px;opacity:1}
 
+/* cards lift a touch */
+.card{transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(51,80,42,.07)}
+
 /* =========================================================
    Responsive
    ========================================================= */
 @media (max-width:900px){
   .concept,.visit{grid-template-columns:1fr}
+  .card--wide{grid-column:span 1}
   /* gallery stays 4-up here; it drops to 2 at 640px */
   /* the cup sits over the CTAs once they go full-width — retire it */
   .hero__cup{display:none}
@@ -711,8 +715,11 @@ html{scrollbar-color:var(--pink) var(--cream-deep)}
   .pills{grid-template-columns:1fr 1fr}
   .gal{gap:10px}
   .gal__i figcaption{opacity:1;transform:none;font-size:.72rem;padding:20px 10px 9px}
+  .ph__m{font-size:1.4rem}
+  .ph::after{font-size:.6rem}
   .hero__cta{flex-direction:column;align-items:stretch}
   .hero__cta .btn{width:100%}
+  .card{padding:24px 20px}
 }
 
 /* ---------- footer responsive ---------- */

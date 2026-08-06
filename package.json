@@ -1,8 +1,0 @@
-{
-  "name": "cafefaim",
-  "private": true,
-  "description": "Café Faim website — static site with CMS-editable content",
-  "scripts": {
-    "build": "node build.js"
-  }
-}
