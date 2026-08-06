@@ -150,6 +150,15 @@
     }
   }
 
+  /* ---------- hero background video ---------- */
+  // autoplay has already fired by the time this runs, so pause rather than
+  // block it outright — respects prefers-reduced-motion without needing
+  // the video element itself to be conditional in the markup.
+  var heroVideo = document.querySelector('.hero__bg');
+  if (heroVideo && prefersReduce) {
+    heroVideo.pause();
+  }
+
   /* ---------- footer year ---------- */
   var yr = document.getElementById('yr');
   if (yr) yr.textContent = new Date().getFullYear();
@@ -167,7 +176,7 @@
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   var targets = document.querySelectorAll(
-    '.concept__text, .pills li, .card, .mcard, .cake, .gal__i, .visit > div, .map, .hero__inner > *'
+    '.concept__text, .pills li, .mcard, .cake, .gal__i, .visit > div, .map, .hero__inner > *'
   );
 
   if (reduce || !('IntersectionObserver' in window)) {
