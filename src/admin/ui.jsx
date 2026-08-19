@@ -172,7 +172,7 @@ export function ImageField({ value, alt, onChange, onAltChange }) {
  * open — Annuleren when the action destroys something, so a stray Enter or an
  * impatient second click cannot confirm it.
  */
-export function ConfirmDialog({ open, title, intro, lines, note, confirmLabel, danger, onConfirm, onCancel }) {
+export function ConfirmDialog({ open, title, intro, sections, note, confirmLabel, danger, onConfirm, onCancel, onGoTo }) {
   const safeButton = useRef(null);
 
   useEffect(() => {
@@ -193,14 +193,31 @@ export function ConfirmDialog({ open, title, intro, lines, note, confirmLabel, d
         <h2 id="ad-modal-title">{title}</h2>
         {intro && <p className="ad-note">{intro}</p>}
 
-        {lines && lines.length > 0 && (
-          <ul className="ad-changes">
-            {lines.map((line, i) => (
-              <li key={i} className={line.includes('VERWIJDERD') ? 'ad-changes__gone' : undefined}>
-                {line}
-              </li>
+        {sections && sections.length > 0 && (
+          <div className="ad-changes">
+            {sections.map((section) => (
+              <div key={section.id}>
+                {/* The heading is a button: seeing a change listed under another
+                    tab immediately raises "which one was that?", and jumping
+                    there is the answer. */}
+                <button
+                  type="button"
+                  className="ad-changes__tab"
+                  onClick={() => onGoTo?.(section.id)}
+                >
+                  {section.label}
+                  <span className="ad-changes__count">{section.changes.length}</span>
+                </button>
+                <ul>
+                  {section.changes.map((line, i) => (
+                    <li key={i} className={line.includes('VERWIJDERD') ? 'ad-changes__gone' : undefined}>
+                      {line}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
 
         {note && <div className="ad-alert ad-alert--error">{note}</div>}
@@ -229,20 +246,21 @@ export function ConfirmDialog({ open, title, intro, lines, note, confirmLabel, d
 }
 
 /*
- * Fixed bar along the bottom.
+ * Fixed bar along the bottom, shared by all four tabs.
  *
- * Save is explicit rather than autosaved: the owner is editing live prices, and
- * a visible "unsaved changes" state plus one button is easier to trust than
- * changes that disappear into the database as you type.
+ * It reports every unsaved change in the dashboard, not just the tab on screen.
+ * Editing the menu, switching to the gallery and pressing Opslaan has to save
+ * both — a per-tab bar made the other tab's work look like it had never
+ * happened, which is exactly the sort of thing you only notice after losing it.
  *
- * Both buttons confirm first, for opposite reasons — Opslaan publishes to the
- * public site immediately, and Ongedaan maken throws work away with no undo.
- * The save dialog lists what will actually change, because "are you sure?" on
- * its own asks a question the reader has no way to answer.
+ * `sections` is [{ id, label, changes }] for every tab that has any.
  */
-export function SaveBar({ dirty, saving, saved, error, changes = [], onSave, onReset }) {
+export function SaveBar({ sections, dirty, saving, saved, error, onSave, onReset, onGoTo }) {
   const [asking, setAsking] = useState(null); // 'save' | 'reset' | null
-  const removals = countRemovals(changes);
+
+  const total = sections.reduce((n, s) => n + s.changes.length, 0);
+  const removals = sections.reduce((n, s) => n + countRemovals(s.changes), 0);
+  const tabsTouched = sections.length;
 
   let message;
   if (error) message = <span className="ad-error">{error}</span>;
@@ -250,7 +268,8 @@ export function SaveBar({ dirty, saving, saved, error, changes = [], onSave, onR
   else if (dirty)
     message = (
       <span className="ad-dirty">
-        {changes.length} wijziging{changes.length === 1 ? '' : 'en'} nog niet opgeslagen
+        {total} wijziging{total === 1 ? '' : 'en'} nog niet opgeslagen
+        {tabsTouched > 1 && ` — verspreid over ${tabsTouched} tabbladen`}
       </span>
     );
   else if (saved) message = <span className="ad-saved">✓ Opgeslagen — staat live op de site</span>;
@@ -283,14 +302,19 @@ export function SaveBar({ dirty, saving, saved, error, changes = [], onSave, onR
       <ConfirmDialog
         open={asking === 'save'}
         title="Dit wordt opgeslagen"
-        intro="Deze wijzigingen komen meteen op de website te staan."
-        lines={changes}
+        intro={
+          tabsTouched > 1
+            ? `Wijzigingen op ${tabsTouched} tabbladen. Ze komen allemaal meteen op de website te staan.`
+            : 'Deze wijzigingen komen meteen op de website te staan.'
+        }
+        sections={sections}
+        onGoTo={onGoTo}
         note={
           removals > 0
             ? `Let op: ${removals} onderdeel${removals === 1 ? '' : 'en'} wordt definitief verwijderd. Dit kan daarna niet meer ongedaan worden gemaakt.`
             : null
         }
-        confirmLabel="Ja, opslaan"
+        confirmLabel="Ja, alles opslaan"
         onCancel={() => setAsking(null)}
         onConfirm={() => {
           setAsking(null);
@@ -301,8 +325,11 @@ export function SaveBar({ dirty, saving, saved, error, changes = [], onSave, onR
       <ConfirmDialog
         open={asking === 'reset'}
         title="Wijzigingen weggooien?"
-        intro={`Je ${changes.length} wijziging${changes.length === 1 ? '' : 'en'} ${changes.length === 1 ? 'gaat' : 'gaan'} verloren. De laatst opgeslagen versie komt terug.`}
-        lines={changes}
+        intro={`${total} wijziging${total === 1 ? '' : 'en'}${
+          tabsTouched > 1 ? ` op ${tabsTouched} tabbladen` : ''
+        } ${total === 1 ? 'gaat' : 'gaan'} verloren. De laatst opgeslagen versie komt terug.`}
+        sections={sections}
+        onGoTo={onGoTo}
         confirmLabel="Ja, weggooien"
         danger
         onCancel={() => setAsking(null)}

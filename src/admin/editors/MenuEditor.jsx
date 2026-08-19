@@ -1,9 +1,8 @@
-import { useCallback } from 'react';
 import { supabase } from '../../lib/supabase.js';
 import { loadTable } from '../db.js';
 import { buildMenuTree, flattenMenuTree, newItem, newSection } from '../menuShape.js';
-import { moveItem, useEditor } from '../useEditor.js';
-import { Bilingual, Loading, OrderTools, SaveBar, TextField, useUnsavedGuard } from '../ui.jsx';
+import { moveItem } from '../useEditor.js';
+import { Bilingual, Loading, OrderTools, TextField } from '../ui.jsx';
 
 /*
  * The menu is the one genuinely nested piece of content: card → column →
@@ -301,10 +300,11 @@ function AddSection({ onAdd }) {
   );
 }
 
-export function MenuEditor() {
-  const editor = useEditor(useCallback(load, []), useCallback(save, []));
-  const { data, update, status, dirty } = editor;
-  useUnsavedGuard(dirty);
+// Stable identities so Admin can hand these to useEditor without re-loading.
+export const menuIO = { load, save };
+
+export function MenuEditor({ editor }) {
+  const { data, update, status } = editor;
 
   if (status === 'loading') return <Loading />;
   if (status === 'failed') return <p className="ad-alert ad-alert--error">{editor.error}</p>;
@@ -342,8 +342,6 @@ export function MenuEditor() {
           ))}
         </section>
       ))}
-
-      <SaveBar {...editor} />
     </>
   );
 }

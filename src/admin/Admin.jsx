@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { isConfigured } from '../lib/supabase.js';
 import { useAuth } from './useAuth.js';
+import { useEditor } from './useEditor.js';
 import { ErrorBoundary } from './ErrorBoundary.jsx';
-import { ConceptEditor } from './editors/ConceptEditor.jsx';
-import { MenuEditor } from './editors/MenuEditor.jsx';
-import { CakesEditor, GalleryEditor } from './editors/PhotoListEditor.jsx';
+import { SaveBar, useUnsavedGuard } from './ui.jsx';
+import { ConceptEditor, conceptIO } from './editors/ConceptEditor.jsx';
+import { MenuEditor, menuIO } from './editors/MenuEditor.jsx';
+import { CakesEditor, GalleryEditor, cakesIO, galleryIO } from './editors/PhotoListEditor.jsx';
 
 const TABS = [
   { id: 'concept', label: 'Concepttekst', Editor: ConceptEditor },
@@ -12,6 +14,54 @@ const TABS = [
   { id: 'cakes', label: 'Taarten op maat', Editor: CakesEditor },
   { id: 'gallery', label: 'Galerij', Editor: GalleryEditor },
 ];
+
+/*
+ * All four editors' state lives here rather than inside each tab.
+ *
+ * Only the active tab is rendered, so if each editor owned its own state,
+ * switching tabs would unmount it and throw away unsaved work without a word.
+ * Holding it here means edits survive tab switches, one Opslaan saves the whole
+ * dashboard, and the confirmation can list every pending change at once.
+ */
+function useWorkspace() {
+  const editors = {
+    concept: useEditor(conceptIO.load, conceptIO.save),
+    menu: useEditor(menuIO.load, menuIO.save),
+    cakes: useEditor(cakesIO.load, cakesIO.save),
+    gallery: useEditor(galleryIO.load, galleryIO.save),
+  };
+
+  const sections = useMemo(
+    () =>
+      TABS.filter((t) => editors[t.id].changes.length > 0).map((t) => ({
+        id: t.id,
+        label: t.label,
+        changes: editors[t.id].changes,
+      })),
+    [editors.concept.changes, editors.menu.changes, editors.cakes.changes, editors.gallery.changes]
+  );
+
+  const dirty = sections.length > 0;
+  const saving = TABS.some((t) => editors[t.id].saving);
+  // "Saved" only once nothing is left pending, so the message cannot claim
+  // success while another tab still holds unsaved work.
+  const saved = !dirty && TABS.some((t) => editors[t.id].saved);
+  const error = TABS.map((t) => editors[t.id].error).find(Boolean) ?? null;
+
+  const onSave = useCallback(async () => {
+    // Sequential, so a failure names one table and the rest are not left
+    // half-written by parallel requests racing each other.
+    for (const tab of TABS) {
+      if (editors[tab.id].changes.length > 0) await editors[tab.id].onSave();
+    }
+  }, [editors.concept, editors.menu, editors.cakes, editors.gallery]);
+
+  const onReset = useCallback(() => {
+    TABS.forEach((tab) => editors[tab.id].onReset());
+  }, [editors.concept, editors.menu, editors.cakes, editors.gallery]);
+
+  return { editors, sections, dirty, saving, saved, error, onSave, onReset };
+}
 
 /* Shown when the build has no Supabase credentials — a blank login box with no
    explanation would just look broken. */
@@ -197,19 +247,13 @@ function Denied({ onSignOut }) {
   );
 }
 
-export default function Admin() {
-  const { admin, status, signIn, signOut, changePassword } = useAuth();
+function Dashboard({ admin, onSignOut }) {
   const [tab, setTab] = useState('concept');
+  const workspace = useWorkspace();
+  useUnsavedGuard(workspace.dirty);
 
-  if (!isConfigured) return <NotConfigured />;
-  if (status === 'checking') return <p className="ad-spinner">Even geduld…</p>;
-  if (status === 'out') return <Login onSignIn={signIn} />;
-  if (status === 'denied') return <Denied onSignOut={signOut} />;
-  if (admin?.must_change_password) {
-    return <ChangePassword onChange={changePassword} onSignOut={signOut} />;
-  }
-
-  const Editor = TABS.find((t) => t.id === tab).Editor;
+  const active = TABS.find((t) => t.id === tab);
+  const Editor = active.Editor;
 
   return (
     <>
@@ -223,35 +267,66 @@ export default function Admin() {
           <a className="ad-btn ad-btn--ghost ad-btn--sm" href="./" target="_blank" rel="noopener">
             Bekijk site
           </a>
-          <button className="ad-btn ad-btn--ghost ad-btn--sm" onClick={signOut}>
+          <button className="ad-btn ad-btn--ghost ad-btn--sm" onClick={onSignOut}>
             Uitloggen
           </button>
         </div>
 
         <div className="ad-tabs" role="tablist">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              className="ad-tab"
-              role="tab"
-              aria-selected={tab === t.id}
-              onClick={() => setTab(t.id)}
-            >
-              {t.label}
-            </button>
-          ))}
+          {TABS.map((t) => {
+            const pending = workspace.editors[t.id].changes.length;
+            return (
+              <button
+                key={t.id}
+                className="ad-tab"
+                role="tab"
+                aria-selected={tab === t.id}
+                onClick={() => setTab(t.id)}
+              >
+                {t.label}
+                {/* A dot on the tab is what makes unsaved work elsewhere
+                    discoverable without opening the save dialog. */}
+                {pending > 0 && (
+                  <span className="ad-tab__dot" title={`${pending} niet-opgeslagen wijziging(en)`} />
+                )}
+              </button>
+            );
+          })}
         </div>
       </header>
 
       <main className="ad-main">
-        {/* Remounting on tab change is intentional: each editor reloads its own
-            rows, so you never edit a stale copy after saving elsewhere. The
-            boundary sits inside the shell so a crash in one editor leaves the
-            tabs usable — switching away is the quickest way out. */}
+        {/* The boundary resets per tab, but the editor state it wraps lives in
+            useWorkspace, so a crash no longer costs the other tabs' work. */}
         <ErrorBoundary key={tab}>
-          <Editor />
+          <Editor editor={workspace.editors[tab]} />
         </ErrorBoundary>
       </main>
+
+      <SaveBar
+        sections={workspace.sections}
+        dirty={workspace.dirty}
+        saving={workspace.saving}
+        saved={workspace.saved}
+        error={workspace.error}
+        onSave={workspace.onSave}
+        onReset={workspace.onReset}
+        onGoTo={setTab}
+      />
     </>
   );
+}
+
+export default function Admin() {
+  const { admin, status, signIn, signOut, changePassword } = useAuth();
+
+  if (!isConfigured) return <NotConfigured />;
+  if (status === 'checking') return <p className="ad-spinner">Even geduld…</p>;
+  if (status === 'out') return <Login onSignIn={signIn} />;
+  if (status === 'denied') return <Denied onSignOut={signOut} />;
+  if (admin?.must_change_password) {
+    return <ChangePassword onChange={changePassword} onSignOut={signOut} />;
+  }
+
+  return <Dashboard admin={admin} onSignOut={signOut} />;
 }

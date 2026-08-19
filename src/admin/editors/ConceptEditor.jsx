@@ -1,8 +1,7 @@
-import { useCallback } from 'react';
 import { supabase } from '../../lib/supabase.js';
 import { loadTable, newId, pairOf, saveCollection } from '../db.js';
-import { moveItem, useEditor } from '../useEditor.js';
-import { Bilingual, Loading, OrderTools, SaveBar, useUnsavedGuard } from '../ui.jsx';
+import { moveItem } from '../useEditor.js';
+import { Bilingual, Loading, OrderTools } from '../ui.jsx';
 
 const pair = (row, key) => ({ nl: row?.[`${key}_nl`] ?? '', en: row?.[`${key}_en`] ?? '' });
 
@@ -56,10 +55,11 @@ async function save(data, original) {
   });
 }
 
-export function ConceptEditor() {
-  const editor = useEditor(useCallback(load, []), useCallback(save, []));
-  const { data, update, status, dirty } = editor;
-  useUnsavedGuard(dirty);
+// Stable identities so Admin can hand these to useEditor without re-loading.
+export const conceptIO = { load, save };
+
+export function ConceptEditor({ editor }) {
+  const { data, update, status } = editor;
 
   if (status === 'loading') return <Loading />;
   if (status === 'failed') return <p className="ad-alert ad-alert--error">{editor.error}</p>;
@@ -152,8 +152,6 @@ export function ConceptEditor() {
           + Blokje toevoegen
         </button>
       </section>
-
-      <SaveBar {...editor} />
     </>
   );
 }
