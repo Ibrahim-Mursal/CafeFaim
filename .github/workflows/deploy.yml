@@ -1,0 +1,89 @@
+name: Deploy to GitHub Pages
+
+# The repository holds source, not a built site: index.html loads
+# /src/main.jsx, which only exists after Vite compiles it. Serving the repo
+# directly gives a blank page, so every push is built here and the contents of
+# dist/ are what actually get published.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # lets you redeploy by hand after changing a secret
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# A queued deploy replaces a waiting one, but never interrupts a running one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # The mapping and menu round-trip checks. If saving the menu would mangle
+      # it, that should stop a deploy rather than reach the café.
+      - run: npm run verify
+
+      # Without these the build still succeeds, but every visitor silently gets
+      # the content bundled at the last commit instead of the live database —
+      # stale prices with nothing on screen to indicate it. Far better to fail
+      # here, loudly, than to publish a site that looks fine and is wrong.
+      - name: Check Supabase configuration is present
+        env:
+          URL: ${{ secrets.VITE_SUPABASE_URL }}
+          KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          missing=""
+          [ -z "$URL" ] && missing="$missing VITE_SUPABASE_URL"
+          [ -z "$KEY" ] && missing="$missing VITE_SUPABASE_ANON_KEY"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing"
+            echo "Add them under Settings -> Secrets and variables -> Actions -> New repository secret."
+            echo "Use the Project URL and the anon / publishable key from Supabase -> Project Settings -> API."
+            echo "Never use the service_role key: it bypasses every security policy."
+            exit 1
+          fi
+
+      - name: Build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: npm run build
+
+      # Catches the case where the key was set but empty or malformed: the
+      # bundle would then carry no project URL and fall back silently.
+      - name: Confirm the build points at Supabase
+        run: |
+          if ! grep -rq "supabase.co" dist/assets/build/*.js; then
+            echo "::error::The built bundle contains no Supabase URL — it would serve fallback content."
+            exit 1
+          fi
+          echo "Built bundle is wired to Supabase."
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
