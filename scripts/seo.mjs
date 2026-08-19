@@ -175,6 +175,10 @@ export function buildHeadTags(siteUrl) {
     `<meta name="twitter:description" content="${esc(DESCRIPTION)}">`,
     `<meta name="twitter:image" content="${esc(ogImage)}">`,
 
+    // Expressible as a meta tag, so it works even on a host that cannot send
+    // custom headers.
+    `<meta name="referrer" content="strict-origin-when-cross-origin">`,
+
     `<meta name="geo.placename" content="Waalwijk">`,
     `<meta name="geo.region" content="NL-NB">`,
 
@@ -194,6 +198,14 @@ export function buildRobots(siteUrl) {
     'Disallow: /fata',
     'Disallow: /fata.html',
     '',
+    '# Opt out of the crawlers that harvest content for AI training and resale.',
+    '# This is a request, not a control: well-behaved crawlers honour it, and',
+    '# nothing stops one that does not. Blocking those needs a CDN in front.',
+    ...[
+      'GPTBot', 'OAI-SearchBot', 'ChatGPT-User', 'ClaudeBot', 'Claude-Web',
+      'anthropic-ai', 'CCBot', 'Google-Extended', 'Applebot-Extended',
+      'PerplexityBot', 'Bytespider', 'Amazonbot', 'FacebookBot', 'meta-externalagent',
+    ].flatMap((bot) => [`User-agent: ${bot}`, 'Disallow: /', '']),
     `Sitemap: ${abs(siteUrl, 'sitemap.xml')}`,
     '',
   ].join('\n');
@@ -221,3 +233,44 @@ export const siteUrlFrom = (env) => {
   const raw = env?.VITE_SITE_URL || DEFAULT_SITE_URL;
   return raw.endsWith('/') ? raw : `${raw}/`;
 };
+
+/*
+ * Content-Security-Policy.
+ *
+ * The build was measured before this was written: no executable inline script
+ * on either page, and no inline style attributes on the public page. So
+ * script-src is plain 'self' — no 'unsafe-inline', no 'unsafe-eval' — which is
+ * the control that actually stops injected script from running.
+ *
+ * The dashboard gets one extra allowance, style-src 'unsafe-inline', because
+ * its components use React style props. That is a real weakening, but a style
+ * injection cannot execute code, and keeping the public page (the part exposed
+ * to the internet at large) strict matters more.
+ *
+ * Applied to the built output only. Vite's dev server serves inline styles and
+ * an HMR script, which this would block.
+ */
+export function buildCsp({ admin = false } = {}) {
+  const style = admin
+    ? "'self' 'unsafe-inline' https://fonts.googleapis.com"
+    : "'self' https://fonts.googleapis.com";
+
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    // No plugins, and no <base> hijacking of relative URLs.
+    "object-src 'none'",
+    "form-action 'self'",
+    "script-src 'self'",
+    `style-src ${style}`,
+    "font-src 'self' https://fonts.gstatic.com",
+    // Supabase Storage serves uploaded photos and the hero video.
+    "img-src 'self' data: https://*.supabase.co",
+    "media-src 'self' https://*.supabase.co",
+    // REST reads and, on the dashboard, auth and uploads.
+    "connect-src 'self' https://*.supabase.co",
+    // Only the embedded map on the Bezoek section.
+    admin ? "frame-src 'none'" : 'frame-src https://maps.google.com https://www.google.com',
+    'upgrade-insecure-requests',
+  ].join('; ');
+}

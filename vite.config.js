@@ -2,7 +2,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
-import { buildHeadTags, buildRobots, buildSitemap, siteUrlFrom } from './scripts/seo.mjs';
+import { buildCsp, buildHeadTags, buildRobots, buildSitemap, siteUrlFrom } from './scripts/seo.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -20,8 +20,19 @@ function seoPlugin(siteUrl) {
     transformIndexHtml: {
       order: 'pre',
       handler(html, ctx) {
-        if (!ctx.path.endsWith('index.html')) return html;
-        return html.replace('<!--SEO-->', buildHeadTags(siteUrl));
+        const admin = ctx.path.includes('fata');
+        let out = admin ? html : html.replace('<!--SEO-->', buildHeadTags(siteUrl));
+
+        // ctx.server is only set by the dev server, which serves inline styles
+        // and an HMR script that a strict policy would block.
+        if (!ctx.server) {
+          out = out.replace(
+            '</head>',
+            `  <meta http-equiv="Content-Security-Policy" content="${buildCsp({ admin })}">
+</head>`
+          );
+        }
+        return out;
       },
     },
     generateBundle() {
