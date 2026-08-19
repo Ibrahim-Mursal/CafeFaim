@@ -3,6 +3,7 @@ import { useLang } from '../lang.jsx';
 import { useTypewriter } from '../hooks/useTypewriter.js';
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion.js';
 import { WHATSAPP } from '../data/site.js';
+import { useContent } from '../content/ContentContext.jsx';
 
 const WORDS = [
   { nl: 'Zoet', en: 'Sweet' },
@@ -13,6 +14,7 @@ const WORDS = [
 
 export function Hero() {
   const { t } = useLang();
+  const { heroVideo } = useContent();
   const reduce = usePrefersReducedMotion();
   const video = useRef(null);
 
@@ -29,6 +31,9 @@ export function Hero() {
   return (
     <section className="hero" id="top">
       <video
+        // Keyed on the source so swapping the video in the dashboard actually
+        // reloads it — changing a <source> src alone does not.
+        key={heroVideo}
         ref={video}
         className="hero__bg"
         autoPlay
@@ -41,7 +46,7 @@ export function Hero() {
         disablePictureInPicture
         disableRemotePlayback
       >
-        <source src="assets/video/hero.mp4" type="video/mp4" />
+        <source src={heroVideo} type="video/mp4" />
       </video>
       <div className="hero__scrim" aria-hidden="true" />
 

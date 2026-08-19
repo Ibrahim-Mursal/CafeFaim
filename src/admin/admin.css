@@ -292,3 +292,10 @@ h1,h2,h3,h4{font-family:var(--f-display);font-weight:600;line-height:1.2}
   .ad-modal__card{padding:20px 18px 16px;max-height:88vh}
   .ad-modal__actions .ad-btn{flex:1}
 }
+
+/* Startvideo preview — same 16:9 letterbox the hero renders in. */
+.ad-video{
+  width:100%;max-width:520px;aspect-ratio:16/9;
+  display:block;border-radius:10px;border:1px solid var(--line);
+  background:var(--cream-deep);object-fit:cover;
+}

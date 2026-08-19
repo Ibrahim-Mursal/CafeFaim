@@ -31,6 +31,7 @@ const FIELD_LABELS = {
   alt: 'Omschrijving van de foto',
   kind: 'Soort onderdeel',
   sub: 'Kleiner kopje',
+  heroVideo: 'Startvideo',
 };
 
 // The same field name is labelled differently in different editors — `heading`
@@ -160,6 +161,9 @@ function walk(before, after, path, out, scope) {
         walk(a, b, TRANSPARENT.has(key) ? path : [...path, label], out, SCOPED_LABELS[key] ? key : scope);
       } else if (a !== b) {
         if (key === 'src') out.push(`${at(path)}foto vervangen`);
+        else if (key === 'heroVideo') {
+          out.push(b ? 'Startvideo: eigen video ingesteld' : 'Startvideo: terug naar de standaardvideo');
+        }
         else if (key === 'sub') out.push(`${at(path)}${label}: ${b ? 'aan' : 'uit'}`);
         else out.push(`${at(path)}${label}: ${short(a)} → ${short(b)}`);
       }

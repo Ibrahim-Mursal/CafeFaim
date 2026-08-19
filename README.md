@@ -37,7 +37,7 @@ Dashboard → **SQL Editor** → New query → paste → Run.
 
 | File | What it does |
 |---|---|
-| `supabase/schema.sql` | Tables, Row Level Security, policies, storage bucket. Safe to re-run. |
+| `supabase/schema.sql` | Tables, Row Level Security, policies, storage bucket. Safe to re-run — and re-run it after pulling changes, since new tables arrive here. |
 | `supabase/seed.sql` | Loads the current site content. **Run once.** Re-running replaces everything, so don't run it again after anyone has started editing. |
 
 Supabase may warn about destructive operations — see the notes at the top of
@@ -113,7 +113,8 @@ prompted, and the four tabs appear.
 
 ## Using the dashboard
 
-Four tabs: **Concepttekst**, **Menukaart**, **Taarten op maat**, **Galerij**.
+Five tabs: **Startvideo**, **Concepttekst**, **Menukaart**, **Taarten op maat**,
+**Galerij**.
 
 - Dutch and English sit side by side. Leaving English empty means "same in both
   languages" — that is how most prices and product names are stored.
@@ -127,6 +128,13 @@ Four tabs: **Concepttekst**, **Menukaart**, **Taarten op maat**, **Galerij**.
 Photos upload straight from the editor (JPG, PNG, WebP or AVIF, up to 6 MB).
 Crop them to portrait beforehand if you can: cake cards render 3:4 and gallery
 tiles 4:5.
+
+The hero background video is capped at 8 MB (MP4 or WebM), which is a bandwidth
+limit rather than a storage one — it autoplays for every visitor, so its size is
+paid on every page load and counts against Supabase's monthly transfer
+allowance. The video that ships with the repo is served from the site's own host
+and costs nothing; an uploaded one is served from Supabase Storage. *Terug naar
+de standaardvideo* switches back.
 
 ---
 

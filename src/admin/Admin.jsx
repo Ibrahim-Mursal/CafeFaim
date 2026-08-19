@@ -4,11 +4,13 @@ import { useAuth } from './useAuth.js';
 import { useEditor } from './useEditor.js';
 import { ErrorBoundary } from './ErrorBoundary.jsx';
 import { SaveBar, useUnsavedGuard } from './ui.jsx';
+import { HeroEditor, heroIO } from './editors/HeroEditor.jsx';
 import { ConceptEditor, conceptIO } from './editors/ConceptEditor.jsx';
 import { MenuEditor, menuIO } from './editors/MenuEditor.jsx';
 import { CakesEditor, GalleryEditor, cakesIO, galleryIO } from './editors/PhotoListEditor.jsx';
 
 const TABS = [
+  { id: 'hero', label: 'Startvideo', Editor: HeroEditor },
   { id: 'concept', label: 'Concepttekst', Editor: ConceptEditor },
   { id: 'menu', label: 'Menukaart', Editor: MenuEditor },
   { id: 'cakes', label: 'Taarten op maat', Editor: CakesEditor },
@@ -25,6 +27,7 @@ const TABS = [
  */
 function useWorkspace() {
   const editors = {
+    hero: useEditor(heroIO.load, heroIO.save),
     concept: useEditor(conceptIO.load, conceptIO.save),
     menu: useEditor(menuIO.load, menuIO.save),
     cakes: useEditor(cakesIO.load, cakesIO.save),
@@ -38,7 +41,13 @@ function useWorkspace() {
         label: t.label,
         changes: editors[t.id].changes,
       })),
-    [editors.concept.changes, editors.menu.changes, editors.cakes.changes, editors.gallery.changes]
+    [
+      editors.hero.changes,
+      editors.concept.changes,
+      editors.menu.changes,
+      editors.cakes.changes,
+      editors.gallery.changes,
+    ]
   );
 
   const dirty = sections.length > 0;
@@ -54,11 +63,11 @@ function useWorkspace() {
     for (const tab of TABS) {
       if (editors[tab.id].changes.length > 0) await editors[tab.id].onSave();
     }
-  }, [editors.concept, editors.menu, editors.cakes, editors.gallery]);
+  }, [editors.hero, editors.concept, editors.menu, editors.cakes, editors.gallery]);
 
   const onReset = useCallback(() => {
     TABS.forEach((tab) => editors[tab.id].onReset());
-  }, [editors.concept, editors.menu, editors.cakes, editors.gallery]);
+  }, [editors.hero, editors.concept, editors.menu, editors.cakes, editors.gallery]);
 
   return { editors, sections, dirty, saving, saved, error, onSave, onReset };
 }
@@ -248,7 +257,7 @@ function Denied({ onSignOut }) {
 }
 
 function Dashboard({ admin, onSignOut }) {
-  const [tab, setTab] = useState('concept');
+  const [tab, setTab] = useState('hero');
   const workspace = useWorkspace();
   useUnsavedGuard(workspace.dirty);
 

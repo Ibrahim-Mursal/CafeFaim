@@ -1,3 +1,8 @@
+// The hero background video that ships with the site. Stays the fallback when
+// no custom one has been uploaded, and is served from the site's own host
+// rather than Supabase Storage — which matters, because every visitor loads it.
+export const DEFAULT_HERO_VIDEO = 'assets/video/hero.mp4';
+
 export const WHATSAPP = 'https://wa.me/message/TPX75PMNP3RSJ1';
 export const INSTAGRAM = 'https://www.instagram.com/cafefaim/';
 export const MAPS =

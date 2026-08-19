@@ -54,6 +54,15 @@ create table if not exists public.concept (
   updated_at  timestamptz not null default now()
 );
 
+-- Single row (id pinned to 1) for site-wide media that is not part of any one
+-- section. Only the hero video today; a table rather than more columns on
+-- `concept` because it is not concept copy and would not belong there.
+create table if not exists public.site_settings (
+  id              int primary key default 1 check (id = 1),
+  hero_video_path text,
+  updated_at      timestamptz not null default now()
+);
+
 create table if not exists public.concept_pills (
   id        uuid primary key default gen_random_uuid(),
   position  int  not null default 0,
@@ -124,6 +133,7 @@ create index if not exists menu_items_section_idx  on public.menu_items (section
 -- ---------------------------------------------------------------------
 alter table public.admins         enable row level security;
 alter table public.concept        enable row level security;
+alter table public.site_settings  enable row level security;
 alter table public.concept_pills  enable row level security;
 alter table public.cakes          enable row level security;
 alter table public.gallery_photos enable row level security;
@@ -138,7 +148,7 @@ do $$
 declare t text;
 begin
   foreach t in array array[
-    'concept','concept_pills','cakes','gallery_photos',
+    'concept','site_settings','concept_pills','cakes','gallery_photos',
     'menu_cards','menu_sections','menu_items'
   ]
   loop

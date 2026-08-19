@@ -31,6 +31,10 @@ export function mapConcept(row, pillRows) {
   };
 }
 
+export function mapSettings(row) {
+  return { heroVideo: row?.hero_video_path || null };
+}
+
 export function mapCakes(rows) {
   return [...(rows ?? [])].sort(byPosition).map((c) => ({
     id: c.id,

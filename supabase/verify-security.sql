@@ -42,12 +42,12 @@ begin
   select count(*) into n
   from pg_class c
   where c.relnamespace = 'public'::regnamespace
-    and c.relname in ('admins','concept','concept_pills','cakes','gallery_photos',
-                      'menu_cards','menu_sections','menu_items')
+    and c.relname in ('admins','concept','site_settings','concept_pills','cakes',
+                      'gallery_photos','menu_cards','menu_sections','menu_items')
     and not c.relrowsecurity;
   results := results || jsonb_build_object(
     'result', case when n = 0 then 'PASS' else '**FAIL**' end,
-    'check_name', 'row level security enabled on all 8 tables',
+    'check_name', 'row level security enabled on all 9 tables',
     'detail', case when n = 0 then 'all enabled' else n || ' table(s) unprotected' end);
 
   ------------------------------------------------------------------ 2 ----
@@ -165,13 +165,13 @@ begin
   select count(*) into n
   from pg_policies
   where schemaname = 'public' and cmd = 'DELETE'
-    and tablename in ('concept','concept_pills','cakes','gallery_photos',
-                      'menu_cards','menu_sections','menu_items')
+    and tablename in ('concept','site_settings','concept_pills','cakes',
+                      'gallery_photos','menu_cards','menu_sections','menu_items')
     and qual like '%is_admin%';
   results := results || jsonb_build_object(
-    'result', case when n = 7 then 'PASS' else '**FAIL**' end,
+    'result', case when n = 8 then 'PASS' else '**FAIL**' end,
     'check_name', 'deleting content is admin-only',
-    'detail', n || ' of 7 tables gated on is_admin()');
+    'detail', n || ' of 8 tables gated on is_admin()');
 
   ----------------------------------------------------------------- 10 ----
   select count(*) into n

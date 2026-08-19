@@ -44,6 +44,16 @@ export async function saveCollection({ table, rows, loadedIds, toDb }) {
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 const MAX_BYTES = 6 * 1024 * 1024;
 
+const VIDEO_TYPES = ['video/mp4', 'video/webm'];
+/*
+ * Much stricter than a storage limit would require, and the reason is bandwidth
+ * rather than disk. The hero video autoplays for every visitor, so its size is
+ * paid on every single page load — on phone data, and against the hosting
+ * plan's monthly transfer. 8 MB is already a lot for a background loop; the
+ * editor says so before the upload rather than after.
+ */
+const MAX_VIDEO_BYTES = 8 * 1024 * 1024;
+
 /*
  * Uploads a photo and returns its public URL.
  *
@@ -62,6 +72,29 @@ export async function uploadImage(file) {
 
   const ext = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif' }[file.type];
   const path = `${new Date().getFullYear()}/${newId()}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from('media')
+    .upload(path, file, { cacheControl: '31536000', upsert: false, contentType: file.type });
+  if (error) throw new Error(`Uploaden mislukt: ${error.message}`);
+
+  const { data } = supabase.storage.from('media').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+export async function uploadVideo(file) {
+  if (!VIDEO_TYPES.includes(file.type)) {
+    throw new Error('Alleen MP4 of WebM.');
+  }
+  if (file.size > MAX_VIDEO_BYTES) {
+    const mb = (file.size / 1024 / 1024).toFixed(1);
+    throw new Error(
+      `Deze video is ${mb} MB — te groot. Maximaal 8 MB, omdat elke bezoeker hem laadt.`
+    );
+  }
+
+  const ext = file.type === 'video/webm' ? 'webm' : 'mp4';
+  const path = `video/${newId()}.${ext}`;
 
   const { error } = await supabase.storage
     .from('media')

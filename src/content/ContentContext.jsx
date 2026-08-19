@@ -1,10 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { isConfigured } from '../lib/supabaseConfig.js';
 import { selectAll } from '../lib/restRead.js';
-import { mapCakes, mapConcept, mapGallery, mapMenu } from './mapping.js';
+import { mapCakes, mapConcept, mapGallery, mapMenu, mapSettings } from './mapping.js';
 import { conceptBlock, conceptPills } from '../data/concept.js';
 import { cakeCategories, galleryPhotos } from '../data/gallery.js';
 import { menuCards } from '../data/menu.js';
+import { DEFAULT_HERO_VIDEO } from '../data/site.js';
 
 /*
  * Content comes from Supabase, with the files in src/data as a fallback.
@@ -22,6 +23,7 @@ import { menuCards } from '../data/menu.js';
  */
 
 const FALLBACK = {
+  heroVideo: DEFAULT_HERO_VIDEO,
   conceptBlock,
   conceptPills,
   cakes: cakeCategories,
@@ -44,6 +46,18 @@ async function fetchContent(signal) {
     ].map((table) => selectAll(table, signal))
   );
 
+  // site_settings is fetched separately and allowed to fail. It arrived after
+  // the other tables, so a database that has not had the newer schema applied
+  // is missing only this one — and that must cost the site its hero video, not
+  // its entire menu.
+  let settings = [];
+  try {
+    settings = await selectAll('site_settings', signal);
+  } catch (err) {
+    if (err.name === 'AbortError') throw err;
+    console.warn('[Café Faim] site_settings unavailable, using the bundled hero video:', err.message);
+  }
+
   const mappedConcept = concept[0]
     ? mapConcept(concept[0], pills)
     : { conceptBlock: FALLBACK.conceptBlock, conceptPills: FALLBACK.conceptPills };
@@ -53,6 +67,9 @@ async function fetchContent(signal) {
   const mappedGallery = mapGallery(gallery);
 
   return {
+    // An uploaded video replaces the bundled one; anything else keeps the file
+    // that ships with the site.
+    heroVideo: mapSettings(settings[0]).heroVideo || FALLBACK.heroVideo,
     conceptBlock: mappedConcept.conceptBlock,
     // An empty table means "not seeded yet", not "the owner deleted everything
     // on purpose" — keeping the bundled copy avoids a blank section.

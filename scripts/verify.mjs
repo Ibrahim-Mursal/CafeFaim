@@ -14,7 +14,7 @@ import assert from 'node:assert/strict';
 import { lunchCard, drinksCard } from '../src/data/menu.js';
 import { cakeCategories, galleryPhotos } from '../src/data/gallery.js';
 import { conceptBlock, conceptPills } from '../src/data/concept.js';
-import { mapCakes, mapConcept, mapGallery, mapMenu } from '../src/content/mapping.js';
+import { mapCakes, mapConcept, mapGallery, mapMenu, mapSettings } from '../src/content/mapping.js';
 import { buildMenuTree, flattenMenuTree } from '../src/admin/menuShape.js';
 import { countRemovals, describeChanges } from '../src/admin/changes.js';
 
@@ -396,6 +396,28 @@ check('deleting every card empties the menu without throwing', () => {
   const before = baseTree();
   const lines = describeChanges(before, { cards: [] });
   assert.equal(countRemovals(lines), before.cards.length);
+});
+
+check('hero video falls back to the bundled file', () => {
+  assert.equal(mapSettings(undefined).heroVideo, null, 'no row -> no override');
+  assert.equal(mapSettings({}).heroVideo, null, 'empty row -> no override');
+  assert.equal(mapSettings({ hero_video_path: '' }).heroVideo, null, 'cleared -> no override');
+  assert.equal(
+    mapSettings({ hero_video_path: 'https://x.supabase.co/storage/v1/object/public/media/video/a.mp4' }).heroVideo,
+    'https://x.supabase.co/storage/v1/object/public/media/video/a.mp4'
+  );
+});
+
+check('swapping or clearing the hero video is described in plain words', () => {
+  const set = describeChanges({ heroVideo: '' }, { heroVideo: 'https://x/v.mp4' });
+  assert.equal(set.length, 1);
+  assert.match(set[0], /eigen video ingesteld/);
+
+  const cleared = describeChanges({ heroVideo: 'https://x/v.mp4' }, { heroVideo: '' });
+  assert.equal(cleared.length, 1);
+  assert.match(cleared[0], /standaardvideo/);
+
+  assert.deepEqual(describeChanges({ heroVideo: '' }, { heroVideo: '' }), []);
 });
 
 console.log(`\n${checks} checks passed\n`);
