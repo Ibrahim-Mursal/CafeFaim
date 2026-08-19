@@ -4,3 +4,4 @@ dist
 # local environment — never commit real keys
 .env
 .env.local
+dist-ssr

@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && vite build --config vite.ssr.config.js && node scripts/prerender.mjs",
     "preview": "vite preview",
     "verify": "node scripts/verify.mjs",
-    "seed:generate": "node scripts/generate-seed.mjs"
+    "seed:generate": "node scripts/generate-seed.mjs",
+    "build:client": "vite build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

@@ -33,6 +33,11 @@ jobs:
 
       - run: npm ci
 
+      # Before the build, because the build needs base_url for the canonical
+      # URL, the Open Graph tags and the sitemap.
+      - uses: actions/configure-pages@v5
+        id: pages
+
       # The mapping and menu round-trip checks. If saving the menu would mangle
       # it, that should stop a deploy rather than reach the café.
       - run: npm run verify
@@ -66,6 +71,10 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || vars.VITE_SUPABASE_ANON_KEY }}
+          # Canonical, Open Graph and sitemap URLs must be absolute and must
+          # match where the site actually lives. Set VITE_SITE_URL once a custom
+          # domain is in use; the fallback is the GitHub Pages address.
+          VITE_SITE_URL: ${{ vars.VITE_SITE_URL || steps.pages.outputs.base_url }}
         run: npm run build
 
       # Catches the case where the key was set but empty or malformed: the
@@ -78,7 +87,6 @@ jobs:
           fi
           echo "Built bundle is wired to Supabase."
 
-      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

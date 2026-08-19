@@ -14,6 +14,9 @@ const TITLES = {
 const LangContext = createContext(null);
 
 function storedLang() {
+  // Prerendering runs this in Node, where there is no localStorage — and the
+  // prerendered HTML should be Dutch, the site's primary language, regardless.
+  if (typeof window === 'undefined') return 'nl';
   try {
     return localStorage.getItem(STORE) === 'en' ? 'en' : 'nl';
   } catch {

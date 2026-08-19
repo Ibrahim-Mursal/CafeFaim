@@ -17,6 +17,7 @@ import { conceptBlock, conceptPills } from '../src/data/concept.js';
 import { mapCakes, mapConcept, mapGallery, mapMenu, mapSettings } from '../src/content/mapping.js';
 import { buildMenuTree, flattenMenuTree } from '../src/admin/menuShape.js';
 import { countRemovals, describeChanges } from '../src/admin/changes.js';
+import { buildHeadTags, buildJsonLd, buildRobots, buildSitemap } from './seo.mjs';
 
 let checks = 0;
 const check = (name, fn) => {
@@ -418,6 +419,80 @@ check('swapping or clearing the hero video is described in plain words', () => {
   assert.match(cleared[0], /standaardvideo/);
 
   assert.deepEqual(describeChanges({ heroVideo: '' }, { heroVideo: '' }), []);
+});
+
+console.log('\nSEO output');
+
+const SITE = 'https://example.test/CafeFaim/';
+
+check('structured data is valid JSON and describes the business', () => {
+  const graph = buildJsonLd(SITE)['@graph'];
+  const biz = graph.find((n) => n['@type'] === 'CafeOrCoffeeShop');
+  assert.ok(biz, 'a CafeOrCoffeeShop node exists');
+  assert.equal(biz.address.streetAddress, 'Stationsstraat 107');
+  assert.equal(biz.address.addressLocality, 'Waalwijk');
+  assert.ok(biz.image.every((u) => u.startsWith('https://')), 'images are absolute URLs');
+  assert.ok(graph.some((n) => n['@type'] === 'WebSite'));
+});
+
+check('opening hours match the visit table, with Monday excluded', () => {
+  const biz = buildJsonLd(SITE)['@graph'][0];
+  const spec = biz.openingHoursSpecification;
+  assert.equal(spec.length, 6, 'six open days; Monday is closed and omitted');
+  assert.ok(!JSON.stringify(spec).includes('Monday'), 'closed day is not advertised as open');
+  for (const s of spec) {
+    assert.match(s.opens, /^\d{2}:\d{2}$/);
+    assert.match(s.closes, /^\d{2}:\d{2}$/);
+  }
+});
+
+check('every priced menu item reaches the structured data', () => {
+  const menu = buildJsonLd(SITE)['@graph'][0].hasMenu;
+  const count = (s) => (s.hasMenuItem?.length ?? 0) + (s.hasMenuSection ?? []).reduce((n, x) => n + count(x), 0);
+  const total = menu.hasMenuSection.reduce((n, s) => n + count(s), 0);
+  assert.equal(total, 52, 'all 52 items, matching the seed');
+
+  const all = [];
+  const walkMenu = (s) => {
+    (s.hasMenuItem ?? []).forEach((i) => all.push(i));
+    (s.hasMenuSection ?? []).forEach(walkMenu);
+  };
+  menu.hasMenuSection.forEach(walkMenu);
+
+  const priced = all.filter((i) => i.offers);
+  assert.ok(priced.length >= 40, 'priced items carry an Offer');
+  for (const item of priced) {
+    assert.equal(item.offers.priceCurrency, 'EUR');
+    // A price schema.org can parse: digits and a decimal point, no euro sign.
+    assert.match(item.offers.price, /^\d+\.\d{2}$/);
+  }
+  // The unpriced Gebak names must not invent a price of zero.
+  assert.ok(all.some((i) => !i.offers), 'unpriced items simply have no Offer');
+});
+
+check('head tags are complete and absolute', () => {
+  const head = buildHeadTags(SITE);
+  for (const needle of [
+    '<title>', 'name="description"', 'rel="canonical"', 'name="robots"',
+    'og:title', 'og:description', 'og:url', 'og:image', 'og:locale',
+    'twitter:card', 'application/ld+json',
+  ]) {
+    assert.ok(head.includes(needle), `head contains ${needle}`);
+  }
+  assert.ok(head.includes(`href="${SITE}"`), 'canonical is the absolute site URL');
+  assert.ok(!head.includes('content="assets/'), 'no relative URLs in social tags');
+});
+
+check('robots and sitemap point at the right host and hide the dashboard', () => {
+  const robots = buildRobots(SITE);
+  assert.ok(robots.includes('Disallow: /fata'), 'dashboard is not advertised');
+  assert.ok(robots.includes(`Sitemap: ${SITE}sitemap.xml`));
+
+  const map = buildSitemap(SITE);
+  assert.ok(map.startsWith('<?xml'));
+  assert.ok(map.includes('http://www.sitemaps.org/schemas/sitemap/0.9'), 'correct namespace');
+  assert.ok(map.includes(`<loc>${SITE}</loc>`));
+  assert.ok(!/<loc>(?!https:\/\/)/.test(map), 'every loc is absolute');
 });
 
 console.log(`\n${checks} checks passed\n`);

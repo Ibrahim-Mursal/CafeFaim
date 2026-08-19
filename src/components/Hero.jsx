@@ -40,7 +40,15 @@ export function Hero() {
         muted
         loop
         playsInline
-        preload="auto"
+        /*
+         * preload="metadata", not "auto": the hero is an 11 MB decorative
+         * loop, and "auto" told every browser to fetch all of it before the
+         * page had finished laying out — on mobile data, for a video the
+         * visitor never asked for. Metadata is enough to start playback, and
+         * the rest streams in behind the scrim. Largest Contentful Paint is a
+         * ranking signal, so this is an SEO fix as much as a courtesy.
+         */
+        preload="metadata"
         aria-hidden="true"
         tabIndex={-1}
         disablePictureInPicture
