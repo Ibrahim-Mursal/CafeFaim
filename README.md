@@ -15,7 +15,7 @@ Deploy by uploading `dist/`. URLs are relative (`base: './'`), so it works from
 a domain root or a subfolder. Filenames are hashed, so no cache-busting query is
 needed.
 
-The site is **two pages**: `index.html` (public) and `admin.html` (dashboard).
+The site is **two pages**: `index.html` (public) and `fata.html` (dashboard).
 The dashboard is a separate entry point on purpose — it works on any static host
 without SPA rewrite rules, and the public page downloads none of its code.
 
@@ -106,7 +106,7 @@ content.
 ### 7. Sign in
 
 Restart `npm run dev` (Vite reads `.env` at startup) and open
-**http://localhost:5181/admin.html**. Sign in, choose a real password when
+**http://localhost:5181/fata.html**. Sign in, choose a real password when
 prompted, and the four tabs appear.
 
 ---

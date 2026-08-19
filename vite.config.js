@@ -14,13 +14,15 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets/build',
-    // Two entry points, so /admin.html is a plain static file that works on
+    // Two entry points, so the dashboard is a plain static file that works on
     // any host without an SPA-rewrite rule — and so the public page never
-    // downloads a byte of the dashboard or the Supabase SDK.
+    // downloads a byte of the dashboard or the Supabase SDK. The entry is named
+    // fata rather than admin so the emitted chunks are not obviously the
+    // dashboard either.
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        admin: resolve(__dirname, 'admin.html'),
+        fata: resolve(__dirname, 'fata.html'),
       },
     },
   },

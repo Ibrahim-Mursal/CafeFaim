@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Café Faim</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<!--
+  Lets the owner type /fata instead of /fata.html. Static hosts (GitHub Pages
+  among them) have no rewrite rules, so the short path has to be a real file
+  that forwards.
+
+  replace() rather than href so the back button returns where the owner came
+  from instead of bouncing forward again. The meta refresh covers the case
+  where script is blocked.
+-->
+<meta http-equiv="refresh" content="0; url=../fata.html">
+<script>location.replace('../fata.html' + location.search + location.hash);</script>
+<style>
+  body{
+    font-family:system-ui,-apple-system,sans-serif;
+    background:#FAF6EC;color:#33502A;
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;margin:0;text-align:center;padding:24px;
+  }
+  a{color:#C41368}
+</style>
+</head>
+<body>
+  <p>Even geduld… <a href="../fata.html">Klik hier als er niets gebeurt.</a></p>
+</body>
+</html>
