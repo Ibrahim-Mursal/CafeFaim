@@ -159,3 +159,100 @@ src/
 
 `src/data/` is both the offline fallback and the source of `seed.sql`. After
 editing it, run `npm run seed:generate`.
+
+
+---
+
+## Security
+
+What protects this site, and what does not.
+
+### Already in place
+
+| Layer | What it does |
+|---|---|
+| Row Level Security | Public may read content, only a row in `admins` may write. Verified by `supabase/verify-security.sql` — 11 checks, all must PASS. |
+| Content-Security-Policy | Generated per page. `script-src 'self'` with no `unsafe-inline`/`unsafe-eval` on both pages; only the dashboard adds `style-src 'unsafe-inline'`. |
+| `public/_headers` | frame-ancestors, HSTS, nosniff, Permissions-Policy, `X-Robots-Tag` on the dashboard. **Only works on Cloudflare Pages / Netlify** — GitHub Pages ignores it. |
+| Dashboard | Login required, forced password change on first sign-in, `noindex`, disallowed in robots.txt, served from `/fata`. |
+| Secrets | `.env` is gitignored and has never been committed. Only the publishable key ships, which is by design. |
+
+### What is *not* protected, and cannot be
+
+**Public content is public.** The menu, photos and prices are readable by anyone
+with the site's URL, including bots — that is what makes the website work. The
+anon key is in the JavaScript bundle by design; it identifies the project and
+grants nothing beyond what the RLS policies allow.
+
+Nothing private is exposed by this: the `admins` table is unreadable, and there
+is no customer or order data in the database.
+
+The robots.txt AI-crawler opt-outs are **requests**. Well-behaved crawlers honour
+them; a scraper that ignores robots.txt is unaffected. Actually blocking bad
+bots needs a CDN in front of the site — see below.
+
+### Recommended next steps
+
+1. **Put Cloudflare in front** (free tier). This is the single biggest security
+   and cost improvement available: bot fighting mode, rate limiting, caching
+   that absorbs scrapers before they reach Supabase, and real security headers
+   via `_headers`. Point `cafefaim.nl` at Cloudflare Pages rather than GitHub
+   Pages and it also fixes the header gap above.
+
+2. **Supabase dashboard settings** — none of these are code:
+   - *Authentication → Attack Protection*: enable **leaked password protection**
+     (checks new passwords against known breaches) and **captcha** on auth.
+   - *Authentication → Sign In / Providers*: confirm sign-ups stay **off**.
+   - *Authentication → Sessions*: set a session timeout so a forgotten login on
+     a shared device expires.
+   - *Settings → Database*: enable **Point-in-Time Recovery** or note the backup
+     schedule. Deleting a menu section in the dashboard is one click and there
+     is no undo after saving.
+   - *Settings → API*: consider lowering **max rows** — the tables are small and
+     it caps how much one request can pull.
+
+3. **Re-run `supabase/verify-security.sql`** after any policy change.
+
+---
+
+## Getting found on Google
+
+The code side is done — prerendered HTML, structured data, canonical, sitemap.
+These steps are not code and matter more than anything left in the repo.
+
+### 1. Google Business Profile — do this first
+
+For a search like "café Waalwijk", the map results sit **above** every organic
+result. This outranks the website itself and is free.
+
+- Create it at [business.google.com](https://business.google.com), category
+  *Café* (add *Bakery*, *Lunch restaurant*, *Halal restaurant* as secondary).
+- Verify the address — usually a postcard, sometimes video.
+- Fill in **everything**: hours (must match the site), phone, the
+  `cafefaim.nl` link, photos, and the halal detail as an attribute.
+- Post the menu, and add products for the custom cakes.
+- **Ask happy customers for reviews.** Review count and recency are among the
+  strongest local ranking factors, and nothing in the code substitutes for them.
+
+### 2. Google Search Console
+
+- Add `cafefaim.nl` at [search.google.com/search-console](https://search.google.com/search-console)
+  as a **Domain** property, verified by DNS TXT record.
+- Submit `https://cafefaim.nl/sitemap.xml`.
+- *URL Inspection* → paste the homepage → **Request indexing**.
+- Check *Rich results* shows the restaurant/menu markup with no errors.
+
+### 3. Bing Webmaster Tools
+
+Ten minutes, imports from Search Console, and feeds ChatGPT search results.
+
+### 4. Consistent listings
+
+Name, address and phone must be **byte-identical** everywhere: Google, Apple
+Maps, Instagram bio, Facebook, TripAdvisor, local Waalwijk directories.
+Inconsistent details actively hurt local ranking.
+
+### 5. After the domain switch
+
+Set the repository variable `VITE_SITE_URL` to `https://cafefaim.nl/` and
+redeploy. Canonical, Open Graph and sitemap URLs all follow it automatically.
