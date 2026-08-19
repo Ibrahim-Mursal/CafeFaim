@@ -357,4 +357,45 @@ check('photo swaps and captions read plainly', () => {
   assert.ok(lines.every((l) => l.startsWith('Bruiloft \u2014')), 'each line names the photo');
 });
 
+check('emptying a list is described, not crashed on', () => {
+  // Regression: [].every(fn) is vacuously true, so an emptied list was mistaken
+  // for the menu's two-column shape and a record was walked as an array. That
+  // threw during render, which unmounted the dashboard — the blank page after
+  // deleting the last row of anything.
+  const emptied = [
+    [{ pills: [{ id: 'a', strong: { nl: '100%', en: '' }, label: { nl: 'Halal', en: '' } }] }, { pills: [] }],
+    [{ photos: [{ id: 'p', src: 'a.jpg', alt: '', caption: { nl: 'X', en: '' } }] }, { photos: [] }],
+  ];
+  for (const [before, after] of emptied) {
+    const lines = describeChanges(before, after);
+    assert.equal(countRemovals(lines), 1, 'the removal is reported');
+  }
+});
+
+check('emptying a menu section keeps the card and column names', () => {
+  const before = baseTree();
+  const after = baseTree();
+  const section = after.cards[0].columns[0][0];
+  const removed = section.items.length;
+  section.items = [];
+
+  const lines = describeChanges(before, after);
+  assert.equal(countRemovals(lines), removed);
+  assert.ok(lines[0].includes('Linkerkolom'), 'names the column');
+  assert.ok(!lines[0].includes('columns'), 'without leaking the raw field name');
+});
+
+check('a field that changes shape does not throw', () => {
+  // Defensive: nothing should produce this, but a crash here blanks the page.
+  assert.doesNotThrow(() => describeChanges({ photos: [] }, { photos: {} }));
+  assert.doesNotThrow(() => describeChanges({ photos: {} }, { photos: [] }));
+  assert.doesNotThrow(() => describeChanges({ a: null }, { a: [] }));
+});
+
+check('deleting every card empties the menu without throwing', () => {
+  const before = baseTree();
+  const lines = describeChanges(before, { cards: [] });
+  assert.equal(countRemovals(lines), before.cards.length);
+});
+
 console.log(`\n${checks} checks passed\n`);

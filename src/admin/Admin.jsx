@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { isConfigured } from '../lib/supabase.js';
 import { useAuth } from './useAuth.js';
+import { ErrorBoundary } from './ErrorBoundary.jsx';
 import { ConceptEditor } from './editors/ConceptEditor.jsx';
 import { MenuEditor } from './editors/MenuEditor.jsx';
 import { CakesEditor, GalleryEditor } from './editors/PhotoListEditor.jsx';
@@ -244,8 +245,12 @@ export default function Admin() {
 
       <main className="ad-main">
         {/* Remounting on tab change is intentional: each editor reloads its own
-            rows, so you never edit a stale copy after saving elsewhere. */}
-        <Editor key={tab} />
+            rows, so you never edit a stale copy after saving elsewhere. The
+            boundary sits inside the shell so a crash in one editor leaves the
+            tabs usable — switching away is the quickest way out. */}
+        <ErrorBoundary key={tab}>
+          <Editor />
+        </ErrorBoundary>
       </main>
     </>
   );

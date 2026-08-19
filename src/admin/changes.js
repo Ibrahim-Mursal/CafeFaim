@@ -43,7 +43,8 @@ const SCOPED_LABELS = {
 
 // Keys whose contents are described by the records inside them, so they add no
 // step of their own to the breadcrumb.
-const TRANSPARENT = new Set(['block', 'cards', 'items', 'groups', 'photos', 'pills']);
+// 'columns' is transparent because compareList already names each column.
+const TRANSPARENT = new Set(['block', 'cards', 'columns', 'items', 'groups', 'photos', 'pills']);
 
 const COLUMN_NAMES = ['Linkerkolom', 'Rechterkolom'];
 
@@ -56,6 +57,7 @@ const isPair = (v) =>
   isObject(v) && Object.keys(v).length > 0 && Object.keys(v).every((k) => k === 'nl' || k === 'en');
 
 const isRecord = (v) => isObject(v) && typeof v.id === 'string';
+const asList = (v) => (Array.isArray(v) ? v : []);
 
 function short(value) {
   const text = (value ?? '').toString().trim();
@@ -85,9 +87,15 @@ function comparePair(before, after, label, path, out) {
   if (enChanged) out.push(`${at(path)}${label} (Engels): ${short(before?.en)} → ${short(after?.en)}`);
 }
 
+// Array.prototype.every is vacuously true for an empty array, so the length
+// check is load-bearing: without it, deleting the last row of any list made the
+// resulting [] look like the menu's two-column [[...],[...]] shape, and a record
+// object was then walked as if it were an array.
+const isListOfLists = (v) => Array.isArray(v) && v.length > 0 && v.every(Array.isArray);
+
 function compareList(before, after, path, out, scope) {
   // Arrays of arrays: only the menu's two columns.
-  if (before.every(Array.isArray) || after.every(Array.isArray)) {
+  if (isListOfLists(before) || isListOfLists(after)) {
     const count = Math.max(before.length, after.length);
     for (let i = 0; i < count; i += 1) {
       walk(before[i] ?? [], after[i] ?? [], [...path, COLUMN_NAMES[i] ?? `Kolom ${i + 1}`], out, scope);
@@ -129,7 +137,9 @@ function walk(before, after, path, out, scope) {
   if (out.length > MAX_LINES) return;
 
   if (Array.isArray(before) || Array.isArray(after)) {
-    compareList(before ?? [], after ?? [], path, out, scope);
+    // Coerced rather than defaulted: if a field is an array on one side and an
+    // object on the other, the object must not reach the list comparison.
+    compareList(asList(before), asList(after), path, out, scope);
     return;
   }
 
