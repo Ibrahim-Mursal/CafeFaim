@@ -159,11 +159,10 @@ a:hover{text-decoration:underline}
 .hero__title.rv.in .t-green{animation:hero-line-in 600ms cubic-bezier(.16,1,.3,1) 150ms both}
 .hero__title.rv.in .t-pink{animation:hero-line-in 600ms cubic-bezier(.16,1,.3,1) 500ms both}
 
-/* Typewriter word above "We cake you happy!" — script.js types and
-   deletes .hero__type-text's content one character at a time, reading
-   words from the hidden .hero__type-words list (which the existing
-   language-swap code above keeps translated). The caret blinks
-   independently so it isn't wiped by the text-content churn. */
+/* Typewriter word above "We cake you happy!" — useTypewriter renders
+   .hero__type-text one character at a time from the word list in Hero.jsx,
+   which t() keeps translated. The caret blinks independently so it isn't
+   wiped by the text churn. */
 .hero__type-cursor{
   display:inline-block;
   width:3px;
@@ -413,49 +412,101 @@ a:hover{text-decoration:underline}
   transition:.25s var(--ease);margin:0;
 }
 .cake:hover{transform:translateY(-5px);box-shadow:0 14px 34px rgba(51,80,42,.13)}
+/* height:auto is required — without it the intrinsic height="" attribute wins
+   over aspect-ratio, so each image kept its own (1000px+) height and the cards
+   came out ragged. */
 .cake img{
-  width:100%;aspect-ratio:3/4;object-fit:cover;display:block;
+  width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;display:block;
   transition:transform .55s var(--ease);
 }
 .cake:hover img{transform:scale(1.05)}
-.cake figcaption{padding:20px 20px 24px;text-align:center}
+/* The hover zoom is a transform, so the image paints above the (untransformed)
+   caption and its overflow bleeds over the heading. Giving the caption its own
+   layer + background keeps the zoom clipped at the image's edge. */
+.cake figcaption{
+  position:relative;z-index:1;background:var(--cream);
+  padding:20px 20px 24px;text-align:center;
+}
 .cake h3{color:var(--pink-hot);margin-bottom:6px;font-size:1.08rem}
 .cake p{font-size:.88rem;color:var(--green-dark)}
 .micro{margin-top:16px;font-size:.85rem;color:var(--green-dark)}
 
-/* ---------- gallery ----------
-   Eight tiles on a uniform aspect-ratio grid. Column counts are 4 / 4 / 2,
-   all of which divide 8 evenly, so no breakpoint ever strands a tile alone
-   on the last row. Fixed aspect ratios also avoid the letterboxing the old
-   grid-auto-rows approach caused on tablet. */
-.gal{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:14px;
-}
-.gal__i{
-  position:relative;
-  border-radius:var(--r);
-  overflow:hidden;
-  background:var(--cream-deep);
-  aspect-ratio:4/5;
-  margin:0;
-}
+/* ---------- in beeld / marquee ----------
+   One continuous strip drifting right-to-left, echoing the ticker up top.
 
-.gal__i img{
-  width:100%;height:100%;object-fit:cover;display:block;
+   The eight photos are rendered twice and the track travels exactly -50%, so
+   copy two lands where copy one started and the loop shows no seam. That only
+   holds if every tile contributes the same width, gap included — hence
+   margin-right on the tile rather than gap on the flex track, which would omit
+   the gap after the final tile and drift by half a gap per lap.
+
+   The drift runs only where there is a real pointer to hover with. Touch gets
+   overflow-x:auto instead, so a swipe scrolls the strip rather than fighting an
+   animation it cannot hover to pause — and the same scroll fallback applies
+   whenever the drift is off (pause button, reduced motion), otherwise half the
+   photos would be unreachable. */
+.marq{
+  margin:6px 0 0;
+  overflow-x:auto;
+  overflow-y:hidden;
+  scroll-snap-type:x proximity;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  /* soften both ends so tiles drift in and out instead of hard-cutting */
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 5%,#000 95%,transparent);
+}
+.marq::-webkit-scrollbar{display:none}
+
+.marq__track{display:flex;width:max-content;will-change:transform}
+
+.marq__i{
+  margin:0 14px 0 0;
+  flex:0 0 clamp(168px,22vw,238px);
+  scroll-snap-align:center;
+}
+.marq__i img{
+  width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;display:block;
+  border-radius:var(--r);
+  background:var(--cream-deep);
   transition:transform .5s var(--ease);
 }
-.gal__i:hover img{transform:scale(1.04)}
-
-.gal__i figcaption{
-  position:absolute;left:0;right:0;bottom:0;
-  padding:26px 16px 13px;
-  font-size:.83rem;font-weight:500;color:#fff;
-  background:linear-gradient(transparent,rgba(42,42,40,.72));
-  opacity:0;transform:translateY(6px);transition:.3s var(--ease);
+/* Caption under the photo, always readable. The old grid hid it behind a
+   hover-only gradient, which left every tile mute on touch. */
+.marq__i figcaption{
+  padding:11px 4px 0;
+  text-align:center;
+  font-size:.85rem;font-weight:500;
+  color:var(--green-dark);
 }
-.gal__i:hover figcaption,.gal__i:focus-within figcaption{opacity:1;transform:none}
+
+@media (hover:hover){
+  .marq{overflow-x:hidden}
+  .marq__track{animation:marq-drift 64s linear infinite}
+  .marq:hover .marq__track,
+  .marq:focus-within .marq__track,
+  .marq.is-paused .marq__track{animation-play-state:paused}
+  .marq.is-paused{overflow-x:auto}
+  .marq__i:hover img{transform:scale(1.04)}
+}
+
+@keyframes marq-drift{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(-50%,0,0)}
+}
+
+.marq__toggle{
+  margin:22px 0 0;
+  padding:7px 20px;
+  font:500 .82rem/1 var(--f-body);
+  color:var(--green-dark);
+  background:var(--cream-deep);
+  border:1px solid rgba(51,80,42,.16);
+  border-radius:999px;
+  cursor:pointer;
+  transition:.22s var(--ease);
+}
+.marq__toggle:hover{background:var(--pink-soft);border-color:var(--pink);color:var(--pink-hot)}
 
 /* ---------- bezoek ---------- */
 .visit{display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(32px,6vw,70px);align-items:start}
@@ -524,10 +575,30 @@ a:hover{text-decoration:underline}
    Polish — scroll reveal, load state, refinements
    ========================================================= */
 
-/* Fade the page in once fonts settle — kills the webfont flash.
-   Gated on html.js so that if JS never runs, the page still renders. */
+/* Fade the page in once fonts settle — kills the webfont flash. usePageReady
+   adds .ready, with a hard timeout behind it so a font that never resolves
+   cannot leave the site invisible. */
 html.js body{opacity:0;transition:opacity .45s var(--ease)}
 html.js body.ready{opacity:1}
+
+/* ---------- language swap ----------
+   LangProvider holds .lang-swap on <html> for one dip, swapping the text at the
+   midpoint while it is invisible — one legible "the language changed" moment
+   instead of dozens of silent jumps.
+
+   This is a keyframe animation rather than an opacity transition on purpose: a
+   transition into the hidden state gets collapsed by the style recalc that the
+   class change triggers, so the text blinked out hard and only faded back in.
+   One animation covering the whole dip is symmetric and cannot be skipped.
+
+   Only text blocks are listed. Links and buttons are deliberately excluded —
+   they carry their own hover transition, and dimming a CTA mid-hover reads as a
+   glitch. Anything inside an <a> is excluded for the same reason, which also
+   spares the brand mark (never translated) from flickering on every toggle. */
+html.lang-swap :is(h1,h2,h3,h4,p,li,td,th,figcaption,.eyebrow,.kicker,.lead,.mn,.mp,.md):not(a *){
+  animation:lang-dip 260ms var(--ease);
+}
+@keyframes lang-dip{0%,100%{opacity:1}50%{opacity:0}}
 
 
 .rv{opacity:0;transform:translateY(22px)}
@@ -565,7 +636,6 @@ html{scrollbar-color:var(--pink) var(--cream-deep)}
    ========================================================= */
 @media (max-width:900px){
   .concept,.visit{grid-template-columns:1fr}
-  /* gallery stays 4-up here; it drops to 2 at 640px */
   .cake img{aspect-ratio:1/1}
 }
 
@@ -578,15 +648,14 @@ html{scrollbar-color:var(--pink) var(--cream-deep)}
   .cakes{grid-template-columns:1fr 1fr;gap:20px}
   .cake img{aspect-ratio:1/1}
 
-  .gal{gap:12px}
 
   .menu{gap:20px}
 }
 
-/* gallery: 2-up on phones (8 tiles = 4 clean rows) */
+/* marquee: smaller tiles on phones, where the strip is swiped not drifted */
 @media (max-width:640px){
-  .gal{grid-template-columns:repeat(2,1fr)}
-  .gal__i{aspect-ratio:1/1}
+  .marq__i{flex-basis:clamp(150px,44vw,196px);margin-right:11px}
+  .marq__i figcaption{font-size:.78rem;padding-top:9px}
 }
 
 /* Cake categories on phones: compact square tiles.
@@ -657,8 +726,6 @@ html{scrollbar-color:var(--pink) var(--cream-deep)}
 @media (max-width:520px){
   :root{--pad:18px}
   .pills{grid-template-columns:1fr 1fr}
-  .gal{gap:10px}
-  .gal__i figcaption{opacity:1;transform:none;font-size:.72rem;padding:20px 10px 9px}
   .hero__cta{flex-direction:column;align-items:stretch}
   .hero__cta .btn{width:100%}
 }
@@ -687,7 +754,7 @@ html{scrollbar-color:var(--pink) var(--cream-deep)}
   *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
   .rv{opacity:1!important;transform:none!important}
   body{opacity:1!important}
-  .gal__i figcaption{opacity:1;transform:none}
+  .marq{overflow-x:auto!important}
 }
 @media print{
   .nav,.hero__cta,.ticker,.map,.checker,.burger{display:none}

@@ -6,6 +6,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["--yes", "serve", "-l", "8080", "."],
       "port": 8080
+    },
+    {
+      "name": "ibrahim-portfolio",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd", "/d", "C:\\Desktop\\IBRAHI~2", "&&", "npm", "run", "dev", "--", "--port", "4331"],
+      "port": 4331
     }
   ]
 }

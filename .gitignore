@@ -1,0 +1,6 @@
+node_modules
+dist
+
+# local environment — never commit real keys
+.env
+.env.local
