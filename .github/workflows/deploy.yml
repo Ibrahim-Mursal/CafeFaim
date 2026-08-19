@@ -41,17 +41,22 @@ jobs:
       # the content bundled at the last commit instead of the live database —
       # stale prices with nothing on screen to indicate it. Far better to fail
       # here, loudly, than to publish a site that looks fine and is wrong.
+      # Accepts either a Secret or a Variable. These end up inlined in the
+      # public bundle regardless, so they are not secret in any real sense — and
+      # a Variable can be read back and corrected, where a mistyped Secret can
+      # only be overwritten blind.
       - name: Check Supabase configuration is present
         env:
-          URL: ${{ secrets.VITE_SUPABASE_URL }}
-          KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+          KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || vars.VITE_SUPABASE_ANON_KEY }}
         run: |
           missing=""
           [ -z "$URL" ] && missing="$missing VITE_SUPABASE_URL"
           [ -z "$KEY" ] && missing="$missing VITE_SUPABASE_ANON_KEY"
           if [ -n "$missing" ]; then
-            echo "::error::Missing repository secret(s):$missing"
-            echo "Add them under Settings -> Secrets and variables -> Actions -> New repository secret."
+            echo "::error::Missing repository secret/variable:$missing"
+            echo "Add under Settings -> Secrets and variables -> Actions."
+            echo "Either tab works: 'Variables' (readable later) or 'Secrets' (write-only)."
             echo "Use the Project URL and the anon / publishable key from Supabase -> Project Settings -> API."
             echo "Never use the service_role key: it bypasses every security policy."
             exit 1
@@ -59,8 +64,8 @@ jobs:
 
       - name: Build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || vars.VITE_SUPABASE_ANON_KEY }}
         run: npm run build
 
       # Catches the case where the key was set but empty or malformed: the
